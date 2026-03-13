@@ -1,0 +1,75 @@
+# app/shared/middleware/rate_limit.py
+from fastapi import status
+from fastapi.responses import JSONResponse
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.requests import Request
+from starlette.responses import Response
+from ..redis.db import async_redis_client, is_allowed
+from ..schemas import ErrorResponse
+from ..logging import get_logger
+
+
+logger = get_logger(__name__)
+
+
+class RateLimitMiddleware(BaseHTTPMiddleware):
+    """
+    Middleware that enforces IP-based rate limiting on every incoming request.
+
+    On each request, the client's IP address is extracted and checked
+    against the sliding window counter stored in Redis. If the limit is
+    exceeded, the request is rejected immediately with ``429 Too Many
+    Requests`` before it reaches any route handler.
+
+    Rate limit parameters (max requests and window duration) are read
+    from ``redis_config`` and require an application restart to take effect.
+
+    Notes
+    -----
+    ``BaseHTTPMiddleware`` wraps every request in a try/except block
+    internally, so unhandled exceptions raised inside ``dispatch`` are
+    still caught by the global exception handlers registered on the app.
+    """
+
+    async def dispatch(self, request: Request, call_next: callable) -> Response:
+        """
+        Check the rate limit for the incoming request and either forward
+        it to the next handler or reject it with a ``429`` response.
+
+        Parameters
+        ----------
+        request : Request
+            Incoming HTTP request.
+        call_next : callable
+            Next handler in the middleware chain. Called only if the
+            rate limit has not been exceeded.
+
+        Returns
+        -------
+        Response
+            The response from the next handler if the request is allowed,
+            or a ``429 Too Many Requests`` JSON response if it is not.
+        """
+        ip = request.client.host
+        allowed = await is_allowed(client=async_redis_client, ip=ip)
+
+        if not allowed:
+            logger.warning(
+                "Rate limit exceeded",
+                extra={
+                    "ip": ip,
+                    "method": request.method,
+                    "url": str(request.url),
+                },
+            )
+            body = ErrorResponse(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                error="Too Many Requests",
+                detail="Rate limit exceeded.",
+            )
+            return JSONResponse(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                content=body.model_dump(),
+            )
+
+        return await call_next(request)

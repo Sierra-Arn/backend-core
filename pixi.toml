@@ -1,0 +1,21 @@
+[workspace]
+authors = ["Sierra Arn"]
+channels = ["conda-forge"]
+name = "backend-core"
+platforms = ["linux-64"]
+version = "0.1.0"
+
+[dependencies]
+python = "*"
+fastapi = "*"
+uvicorn = "*"
+pydantic-settings = "*"
+psycopg2-binary = "*"
+asyncpg = "*"
+alembic = "*"
+sqlalchemy = "*"
+redis-py = "*"
+just = "*"
+bcrypt = "*"
+pyjwt = "*"
+python-json-logger = "*"
