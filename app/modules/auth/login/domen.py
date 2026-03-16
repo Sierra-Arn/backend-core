@@ -13,7 +13,6 @@ from ....shared.auth import (
     create_refresh_token
 )
 
-
 async def login(email: str, password: str) -> dict:
     """
     Authenticate a user and issue a new access/refresh token pair.
@@ -42,7 +41,11 @@ async def login(email: str, password: str) -> dict:
         user_repo = UserRepository(db)
         refresh_token_repo = RefreshTokenRepository(db)
 
-        user = await user_repo.get_by_email_with_roles(email)
+        user = await user_repo.get_by_email(
+            email=email,
+            load_roles = True,
+            load_permissions = True
+        )
         if user is None or not verify_password(password, user.hashed_password):
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,

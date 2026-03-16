@@ -49,7 +49,11 @@ async def refresh(refresh_token: str) -> dict:
                 detail="Invalid or expired refresh token.",
             )
 
-        user = await user_repo.get_with_roles(token_record.user_id)
+        user = await user_repo.get(
+            user_id=token_record.user_id,
+            load_roles = True,
+            load_permissions = True
+        )
         permissions = list({
             perm.permission
             for role in user.roles

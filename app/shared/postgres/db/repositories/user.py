@@ -30,128 +30,125 @@ class UserRepository(BaseRepository[User]):
         """
         super().__init__(db=db, model=User)
 
-    async def get_by_email(self, email: str) -> User | None:
+    async def get(
+        self,
+        user_id: int,
+        load_roles: bool = False,
+        load_permissions: bool = False,
+    ) -> User | None:
         """
-        Retrieve a user record by its unique email address.
-        Used during registration to detect duplicate accounts before
-        insertion, and during login to fetch the user record for
-        credential verification.
-        
-        Parameters
-        ----------
-        email : str
-            The email address to look up. Must be an exact match.
-        
-        Returns
-        -------
-        User or None
-            The matching user instance if found; ``None`` if no record
-            exists with the given email address.
-        
-        Notes
-        -----
-        The ``email`` column carries a unique B-tree index, so this
-        query resolves in O(log n) rather than requiring a full table scan.
-        """
-
-        stmt = select(User).where(User.email == email)
-        result = await self.db.execute(stmt)
-        return result.scalar_one_or_none()
-
-    async def get_with_roles(self, user_id: int) -> User | None:
-        """
-        Retrieve a user record by primary key with roles and permissions
-        eagerly loaded.
-
-        Used wherever the caller needs to access ``user.roles`` or
-        ``role.permissions`` — for example, when building the JWT payload
-        during login or token refresh. Eager loading via ``selectinload``
-        avoids the ``MissingGreenlet`` error that occurs when lazy loading
-        is attempted outside an active async session.
+        Retrieve a User by ID with optional eager loading.
 
         Parameters
         ----------
         user_id : int
             Primary key of the user to retrieve.
+        load_roles : bool, optional
+            If True, eagerly load all roles. Default is False.
+        load_permissions : bool, optional
+            If True, eagerly load permissions for each role (requires load_roles=True).
+            Default is False.
 
         Returns
         -------
-        User or None
-            The matching user instance with ``roles`` and
-            ``role.permissions`` populated, or ``None`` if no record
-            exists with the given ID.
+        User | None
+            User instance if found, None otherwise.
         """
 
-        stmt = (
-            select(User)
-            .where(User.id == user_id)
-            .options(
-                selectinload(User.roles).selectinload(Role.permissions)
-            )
-        )
+        stmt = select(User).where(User.id == user_id)
+
+        if load_roles:
+            stmt = stmt.options(selectinload(User.roles))
+        
+            if load_permissions:
+                stmt = stmt.options(
+                    selectinload(User.roles)
+                    .selectinload(Role.permissions)
+                )
+
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()
 
-    async def get_by_email_with_roles(self, email: str) -> User | None:
+    async def get_all(
+        self,
+        skip: int = 0,
+        limit: int = 100,
+        load_roles: bool = False,
+        load_permissions: bool = False,
+    ) -> list[User]:
         """
-        Retrieve a user record by email address with roles and permissions
-        eagerly loaded.
+        Retrieve a paginated list of all Users with optional eager loading.
 
-        Used during login where both credential verification and JWT payload
-        construction require access to ``user.roles`` and
-        ``role.permissions`` within the same request.
+        Parameters
+        ----------
+        skip : int, optional
+            Number of records to skip (for pagination offset). Default is 0.
+        limit : int, optional
+            Maximum number of records to return. Default is 100.
+        load_roles : bool, optional
+            If True, eagerly load all roles. Default is False.
+        load_permissions : bool, optional
+            If True, eagerly load permissions for each role (requires load_roles=True).
+            Default is False.
+
+        Returns
+        -------
+        list[User]
+            A list of up to ``limit`` User instances.
+        """
+        
+        stmt = select(User).offset(skip).limit(limit)
+
+        if load_roles:
+            stmt = stmt.options(selectinload(User.roles))
+
+            if load_permissions:
+                stmt = stmt.options(
+                    selectinload(User.roles)
+                    .selectinload(Role.permissions)
+                )
+
+        result = await self.db.execute(stmt)
+        return list(result.scalars().all())
+
+    async def get_by_email(
+        self,
+        email: str,
+        load_roles: bool = False,
+        load_permissions: bool = False,
+    ) -> User | None:
+        """
+        Retrieve a User by email address with optional eager loading.
 
         Parameters
         ----------
         email : str
             The email address to look up. Must be an exact match.
+        load_roles : bool, optional
+            If True, eagerly load all roles. Default is False.
+        load_permissions : bool, optional
+            If True, eagerly load permissions for each role (requires load_roles=True).
+            Default is False.
 
         Returns
         -------
-        User or None
-            The matching user instance with ``roles`` and
-            ``role.permissions`` populated, or ``None`` if no record
-            exists with the given email address.
+        User | None
+            User instance if found, None otherwise.
         """
 
-        stmt = (
-            select(User)
-            .where(User.email == email)
-            .options(
-                selectinload(User.roles).selectinload(Role.permissions)
-            )
-        )
+        stmt = select(User).where(User.email == email)
+
+        if load_roles:
+            stmt = stmt.options(selectinload(User.roles))
+        
+            if load_permissions:
+                stmt = stmt.options(
+                    selectinload(User.roles)
+                    .selectinload(Role.permissions)
+                )
+
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()
-
-    async def get_all_with_roles(self, skip: int = 0, limit: int = 100) -> list[User]:
-        """
-        Retrieve a paginated list of all users with roles eagerly loaded.
-
-        Used in ``get_all`` to avoid ``DetachedInstanceError`` when accessing
-        ``user.roles`` outside the session context.
-
-        Parameters
-        ----------
-        skip : int, optional
-            Number of records to skip (for pagination offset). Default is ``0``.
-        limit : int, optional
-            Maximum number of records to return. Default is ``100``.
-
-        Returns
-        -------
-        list[User]
-            A list of up to ``limit`` user instances with ``roles`` populated.
-        """
-
-        stmt = (
-            select(User)
-            .options(selectinload(User.roles))
-            .offset(skip)
-            .limit(limit)
-        )
-        result = await self.db.execute(stmt)
-        return list(result.scalars().all())
 
     async def count_all(self) -> int:
         """

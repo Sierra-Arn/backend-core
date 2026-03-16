@@ -24,7 +24,12 @@ async def get_all_users(skip: int, limit: int) -> GetAllUsersResponse:
     async with get_async_db_session() as db:
         user_repo = UserRepository(db)
 
-        users = await user_repo.get_all_with_roles(skip=skip, limit=limit)
+        users = await user_repo.get_all(
+            skip=skip, 
+            limit=limit, 
+            load_roles = True, 
+            load_permissions = True
+        )
         total = await user_repo.count_all()
 
     return GetAllUsersResponse(
