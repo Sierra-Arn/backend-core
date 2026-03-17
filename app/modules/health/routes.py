@@ -1,14 +1,15 @@
 # app/modules/health/routes.py
+import asyncio
 from fastapi import APIRouter, status
 from .schemas import HealthResponse, ServiceStatus
 from .domen import check_postgres, check_redis
 
 
-health_router = APIRouter()
+health_router = APIRouter(prefix="/health", tags=["health"])
 
 
 @health_router.get(
-    "/health",
+    "/",
     status_code=status.HTTP_200_OK,
     response_model=HealthResponse,
     summary="Health check",
@@ -18,17 +19,21 @@ health_router = APIRouter()
     ),
 )
 async def health_route() -> HealthResponse:
-    postgres_status = await check_postgres()
-    redis_status = await check_redis()
+    results = await asyncio.gather(
+        check_postgres(),
+        check_redis()
+    )
+
+    postgres_status, redis_status = results
 
     overall = (
         ServiceStatus.OK
-        if postgres_status == ServiceStatus.OK and redis_status == ServiceStatus.OK
+        if all(s == ServiceStatus.OK for s in results)
         else ServiceStatus.DEGRADED
     )
 
     return HealthResponse(
         status=overall,
         postgres=postgres_status,
-        redis=redis_status,
+        redis=redis_status
     )
