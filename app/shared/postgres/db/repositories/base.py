@@ -59,7 +59,6 @@ class BaseRepository(Generic[ModelType]):
         model : Type[ModelType]
             The SQLAlchemy ORM model class this repository operates on.
         """
-
         self.db = db
         self.model = model
 
@@ -77,12 +76,10 @@ class BaseRepository(Generic[ModelType]):
         ModelType
             The newly created model instance, including auto-generated fields.
         """
-
         db_obj = self.model(**obj_data)
         self.db.add(db_obj)
         await self.db.flush()
         await self.db.refresh(db_obj)
-
         return db_obj
 
     async def get(self, obj_id: int) -> ModelType | None:
@@ -99,7 +96,6 @@ class BaseRepository(Generic[ModelType]):
         ModelType or None
             The entity if found; `None` if no record exists with the given ID.
         """
-        
         stmt = select(self.model).where(self.model.id == obj_id)
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()
@@ -120,7 +116,6 @@ class BaseRepository(Generic[ModelType]):
         list[ModelType]
             A list of up to `limit` entities, starting after `skip` records.
         """
-        
         stmt = select(self.model).offset(skip).limit(limit)
         result = await self.db.execute(stmt)
         return list(result.scalars().all())
@@ -142,7 +137,6 @@ class BaseRepository(Generic[ModelType]):
         ModelType or None
             The updated entity if it exists; `None` if no entity matches `obj_id`.
         """
-        
         db_obj = await self.get(obj_id)
         if db_obj is None:
             return None
@@ -168,7 +162,6 @@ class BaseRepository(Generic[ModelType]):
         bool
             `True` if the entity was found and deleted; `False` if no such entity exists.
         """
-        
         db_obj = await self.get(obj_id)
         if db_obj is None:
             return False

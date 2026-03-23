@@ -6,7 +6,6 @@ from ..router import users_router
 from ....shared.auth import require_permission
 
 
-
 @users_router.get(
     "/all",
     status_code=status.HTTP_200_OK,

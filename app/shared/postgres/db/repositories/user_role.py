@@ -57,7 +57,6 @@ class UserRoleRepository:
         raise an ``IntegrityError``. Callers should use ``has_role`` to guard
         against duplicate assignments when idempotency is required.
         """
-        
         user_role = UserRole(user_id=user_id, role_id=role_id)
         self.db.add(user_role)
         await self.db.flush()
@@ -81,7 +80,6 @@ class UserRoleRepository:
             ``True`` if the association was found and deleted;
             ``False`` if no such association exists.
         """
-
         stmt = (
             delete(UserRole)
             .where(
@@ -114,7 +112,6 @@ class UserRoleRepository:
             ``True`` if the ``(user_id, role_id)`` pair exists in the
             association table; ``False`` otherwise.
         """
-
         stmt = select(UserRole).where(
             UserRole.user_id == user_id,
             UserRole.role_id == role_id,
@@ -146,7 +143,6 @@ class UserRoleRepository:
         as the leading column allows PostgreSQL to satisfy this query
         with an index range scan rather than a full table scan.
         """
-
         stmt = (
             select(Role)
             .join(UserRole, UserRole.role_id == Role.id)

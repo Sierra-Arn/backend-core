@@ -67,7 +67,6 @@ async def seed() -> None:
         If ``SEED_ADMIN_EMAIL`` or ``SEED_ADMIN_PASSWORD`` are not set,
         or if the ``admin`` role is not found in the database.
     """
-
     admin_email = _get_required_env("SEED_ADMIN_EMAIL")
     admin_password = _get_required_env("SEED_ADMIN_PASSWORD")
 

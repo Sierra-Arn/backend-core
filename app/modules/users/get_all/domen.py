@@ -1,7 +1,7 @@
 # app/modules/users/get_all/domen.py
+from .schemas import GetAllUsersResponse, UserSchema
 from ....shared.postgres.db import get_async_db_session
 from ....shared.postgres.db.repositories import UserRepository
-from .schemas import GetAllUsersResponse, UserSchema
 
 
 async def get_all_users(skip: int, limit: int) -> GetAllUsersResponse:
@@ -20,30 +20,19 @@ async def get_all_users(skip: int, limit: int) -> GetAllUsersResponse:
     GetAllUsersResponse
         Paginated response containing the user list and pagination metadata.
     """
-    
     async with get_async_db_session() as db:
         user_repo = UserRepository(db)
-
         users = await user_repo.get_all(
-            skip=skip, 
-            limit=limit, 
-            load_roles = True, 
-            load_permissions = True
+            skip=skip,
+            limit=limit,
+            load_roles=True,
+            load_permissions=False,
         )
         total = await user_repo.count_all()
 
-    return GetAllUsersResponse(
-        users=[
-            UserSchema(
-                id=user.id,
-                email=user.email,
-                bio=user.bio,
-                roles=[role.name for role in user.roles],
-                created_at=user.created_at,
-            )
-            for user in users
-        ],
-        total=total,
-        skip=skip,
-        limit=limit,
-    )
+        return GetAllUsersResponse(
+            users=[UserSchema.model_validate(user) for user in users],
+            total=total,
+            skip=skip,
+            limit=limit,
+        )

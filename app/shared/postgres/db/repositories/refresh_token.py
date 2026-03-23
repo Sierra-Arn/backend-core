@@ -57,7 +57,6 @@ class RefreshTokenRepository(BaseRepository[RefreshToken]):
         The ``token`` column carries a unique B-tree index, so this
         query resolves in O(log n) rather than requiring a full table scan.
         """
-        
         stmt = select(RefreshToken).where(RefreshToken.token == token)
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()
@@ -80,7 +79,6 @@ class RefreshTokenRepository(BaseRepository[RefreshToken]):
             ``True`` if the token was found and deleted;
             ``False`` if no record exists with the given token value.
         """
-        
         stmt = (
             delete(RefreshToken)
             .where(RefreshToken.token == token)
@@ -111,7 +109,6 @@ class RefreshTokenRepository(BaseRepository[RefreshToken]):
         expiry range condition an efficient index range scan rather than
         a full table scan.
         """
-
         now = datetime.now(timezone.utc)
         stmt = (
             delete(RefreshToken)

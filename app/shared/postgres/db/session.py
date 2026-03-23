@@ -62,7 +62,6 @@ async def get_async_db_session() -> AsyncGenerator[AsyncSession, None]:
     - The `finally` block is implicit in the async context manager protocol and does not require
     explicit cleanup beyond `session.close()`, which is handled automatically by `async with`.
     """
-    
     async with AsyncSessionLocal() as db:
         try:
             yield db

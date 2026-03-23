@@ -1,6 +1,6 @@
 # app/shared/postgres/db/repositories/user.py
-from sqlalchemy import select, func
-from sqlalchemy.orm import selectinload
+from sqlalchemy import select, func, Select
+from sqlalchemy.orm import selectinload, noload
 from sqlalchemy.ext.asyncio import AsyncSession
 from .base import BaseRepository
 from ..models import User, Role
@@ -11,6 +11,7 @@ class UserRepository(BaseRepository[User]):
     Concrete repository for managing ``User`` entities in the database.
     Extends the generic ``BaseRepository`` with user-specific queries
     that are not covered by the standard CRUD interface.
+
     Attributes
     ----------
     db : AsyncSession
@@ -29,6 +30,50 @@ class UserRepository(BaseRepository[User]):
             Typically injected via a dependency or context manager.
         """
         super().__init__(db=db, model=User)
+
+    def _apply_load_options(
+        self,
+        stmt: Select,
+        load_roles: bool,
+        load_permissions: bool,
+    ):
+        """
+        Apply eager loading options to a SELECT statement for User relationships.
+
+        Parameters
+        ----------
+        stmt : Select
+            The base SELECT statement to apply options to.
+        load_roles : bool
+            If True, eagerly load roles via ``selectinload``.
+            If False, roles are explicitly suppressed via ``noload``.
+        load_permissions : bool
+            If True, eagerly load permissions for each role via ``selectinload``.
+            Ignored if ``load_roles`` is False.
+            If False, permissions are explicitly suppressed via ``noload``.
+
+        Returns
+        -------
+        Select
+            The statement with loading options applied.
+        """
+        if load_roles:
+            if load_permissions:
+                return stmt.options(
+                    selectinload(User.roles)
+                    .selectinload(Role.permissions)
+                )
+            else:
+                return stmt.options(
+                    selectinload(User.roles)
+                    .noload(Role.permissions)
+                )
+        else:
+            stmt = stmt.options(noload(User.roles))
+
+        # Always suppress refresh_tokens — never needed in API responses
+        stmt = stmt.options(noload(User.refresh_tokens))
+        return stmt
 
     async def get(
         self,
@@ -54,18 +99,8 @@ class UserRepository(BaseRepository[User]):
         User | None
             User instance if found, None otherwise.
         """
-
         stmt = select(User).where(User.id == user_id)
-
-        if load_roles:
-            stmt = stmt.options(selectinload(User.roles))
-        
-            if load_permissions:
-                stmt = stmt.options(
-                    selectinload(User.roles)
-                    .selectinload(Role.permissions)
-                )
-
+        stmt = self._apply_load_options(stmt, load_roles, load_permissions)
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()
 
@@ -96,18 +131,8 @@ class UserRepository(BaseRepository[User]):
         list[User]
             A list of up to ``limit`` User instances.
         """
-        
         stmt = select(User).offset(skip).limit(limit)
-
-        if load_roles:
-            stmt = stmt.options(selectinload(User.roles))
-
-            if load_permissions:
-                stmt = stmt.options(
-                    selectinload(User.roles)
-                    .selectinload(Role.permissions)
-                )
-
+        stmt = self._apply_load_options(stmt, load_roles, load_permissions)
         result = await self.db.execute(stmt)
         return list(result.scalars().all())
 
@@ -135,18 +160,8 @@ class UserRepository(BaseRepository[User]):
         User | None
             User instance if found, None otherwise.
         """
-
         stmt = select(User).where(User.email == email)
-
-        if load_roles:
-            stmt = stmt.options(selectinload(User.roles))
-        
-            if load_permissions:
-                stmt = stmt.options(
-                    selectinload(User.roles)
-                    .selectinload(Role.permissions)
-                )
-
+        stmt = self._apply_load_options(stmt, load_roles, load_permissions)
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()
 
@@ -161,7 +176,6 @@ class UserRepository(BaseRepository[User]):
         int
             Total number of rows in the ``users`` table.
         """
-
         stmt = select(func.count()).select_from(User)
         result = await self.db.execute(stmt)
         return result.scalar_one()

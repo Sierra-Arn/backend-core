@@ -13,6 +13,5 @@ class RoleEnum(StrEnum):
     ADMIN : str
         Privileged role reserved for administrative operations.
     """
-    
     USER = "user"
     ADMIN = "admin"

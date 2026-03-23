@@ -10,6 +10,7 @@ class RoleRepository(BaseRepository[Role]):
     Concrete repository for managing ``Role`` entities in the database.
     Extends the generic ``BaseRepository`` with role-specific queries
     that are not covered by the standard CRUD interface.
+
     Attributes
     ----------
     db : AsyncSession
@@ -21,6 +22,7 @@ class RoleRepository(BaseRepository[Role]):
     def __init__(self, db: AsyncSession) -> None:
         """
         Initialize the role repository with a database session.
+        
         Parameters
         ----------
         db : AsyncSession
@@ -35,6 +37,7 @@ class RoleRepository(BaseRepository[Role]):
         Used during registration to look up the default role assigned
         to every new account (e.g., ``"user"``), and during authorization
         checks that resolve permissions by role name.
+
         Parameters
         ----------
         name : str
@@ -50,7 +53,6 @@ class RoleRepository(BaseRepository[Role]):
         The ``name`` column carries a unique B-tree index, so this
         query resolves in O(log n) rather than requiring a full table scan.
         """
-        
         stmt = select(Role).where(Role.name == name)
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()

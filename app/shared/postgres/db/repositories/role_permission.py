@@ -55,7 +55,6 @@ class RolePermissionRepository:
         use ``has_permission`` to guard against duplicate assignments
         when idempotency is required.
         """
-
         role_permission = RolePermission(role_id=role_id, permission=permission)
         self.db.add(role_permission)
         await self.db.flush()
@@ -88,7 +87,6 @@ class RolePermissionRepository:
             )
             .returning(RolePermission.id)
         )
-
         result = await self.db.execute(stmt)
         await self.db.flush()
         return result.fetchone() is not None
@@ -113,7 +111,6 @@ class RolePermissionRepository:
             ``True`` if the ``(role_id, permission)`` pair exists;
             ``False`` otherwise.
         """
-
         stmt = select(RolePermission).where(
             RolePermission.role_id == role_id,
             RolePermission.permission == permission,
@@ -137,7 +134,6 @@ class RolePermissionRepository:
             A list of ``Permission`` values assigned to the role.
             Returns an empty list if no permissions are assigned.
         """
-
         stmt = select(RolePermission.permission).where(RolePermission.role_id == role_id)
         result = await self.db.execute(stmt)
         return list(result.scalars().all())
