@@ -1,9 +1,9 @@
-# app/modules/health/domen.py
+# app/modules/health/deep/domen.py
 from sqlalchemy import text
 from .schemas import ServiceStatus
-from ...shared.postgres.db.session import engine
-from ...shared.redis.db.client import async_redis_client
-from ...shared.logging import get_logger
+from ....shared.postgres.db.session import engine
+from ....shared.redis.db.client import async_redis_client
+from ....shared.logging import get_logger
 
 
 logger = get_logger(__name__)

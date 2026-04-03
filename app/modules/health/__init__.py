@@ -1,2 +1,4 @@
 # app/modules/health/__init__.py
-from .routes import health_router, health_route
+from .router import health_router
+from .shallow import shallow_health_route
+from .deep import deep_health_route

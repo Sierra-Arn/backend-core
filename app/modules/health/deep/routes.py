@@ -1,24 +1,22 @@
-# app/modules/health/routes.py
+# app/modules/health/deep/routes.py
 import asyncio
-from fastapi import APIRouter, status
-from .schemas import HealthResponse, ServiceStatus
+from fastapi import status
+from .schemas import DeepHealthResponse, ServiceStatus
 from .domen import check_postgres, check_redis
-
-
-health_router = APIRouter(prefix="/health", tags=["health"])
+from ..router import health_router
 
 
 @health_router.get(
-    "/",
+    "/deep/",
     status_code=status.HTTP_200_OK,
-    response_model=HealthResponse,
-    summary="Health check",
+    response_model=DeepHealthResponse,
+    summary="Deep Health check",
     description=(
         "Returns the availability status of the application and its "
         "dependencies. Each field is either ``ok`` or ``unavailable``."
     ),
 )
-async def health_route() -> HealthResponse:
+async def deep_health_route() -> DeepHealthResponse:
     results = await asyncio.gather(
         check_postgres(),
         check_redis()
@@ -32,7 +30,7 @@ async def health_route() -> HealthResponse:
         else ServiceStatus.DEGRADED
     )
 
-    return HealthResponse(
+    return DeepHealthResponse(
         status=overall,
         postgres=postgres_status,
         redis=redis_status

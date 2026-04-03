@@ -1,30 +1,9 @@
-# app/modules/health/schemas.py
-from enum import StrEnum
+# app/modules/health/deep/schemas.py
 from pydantic import BaseModel, ConfigDict, Field
+from ..base_schemas import ServiceStatus
  
  
-class ServiceStatus(StrEnum):
-    """
-    Enumeration of possible availability states for the application
-    and its dependencies.
- 
-    Attributes
-    ----------
-    OK : str
-        The service is reachable and operating normally.
-    DEGRADED : str
-        The application is running but one or more dependencies are
-        unavailable. Requests that rely on the affected dependency will fail.
-    UNAVAILABLE : str
-        The service could not be reached or did not respond successfully.
-    """
- 
-    OK = "ok"
-    DEGRADED = "degraded"
-    UNAVAILABLE = "unavailable"
- 
- 
-class HealthResponse(BaseModel):
+class DeepHealthResponse(BaseModel):
     """Response body describing the availability of the application and its dependencies."""
  
     status: ServiceStatus = Field(
