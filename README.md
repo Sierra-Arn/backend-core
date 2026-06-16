@@ -2,7 +2,7 @@
 
 *An educational project demonstrating how to build a backend server with Python, covering authentication, authorization, rate limiting, access logging and global error handling.*
 
-## **Project Structure**
+## Project Structure
 
 ```bash
 backend-core/
@@ -16,13 +16,13 @@ backend-core/
 
 Each directory includes its own `README.md` with detailed information about its contents and usage, and every file (except `docker-compose.yml`) contains comprehensive inline comments to explain the code.
 
-## **PostgreSQL and Redis as core infrastructure**
+## PostgreSQL and Redis as core infrastructure
 
 PostgreSQL was chosen as the primary database because its relational, table-based storage model and full ACID compliance are a natural fit for the security-sensitive data managed by this project — user accounts, roles, permissions, and authentication tokens all require strong consistency and transactional guarantees that an eventually consistent (BASE) system cannot provide. Beyond technical fit, PostgreSQL is released under the PostgreSQL License — one of the most permissive open-source licenses available — making it suitable for use in any project, commercial or otherwise, without legal restrictions. Redis was chosen for token blacklisting and rate limiting due to its native TTL support and sub-millisecond read/write performance. Both databases were also chosen for their familiarity from previous projects — [postgresql-core](https://github.com/Sierra-Arn/postgresql-core) and [redis-core](https://github.com/Sierra-Arn/redis-core).
 
 Since the primary focus here is on demonstrating backend server patterns, the `docker-compose.yml` file contains a minimal configuration for both databases, omitting the more detailed comments found in the projects' compose files.
 
-## **Dependencies Overview**
+## Dependencies Overview
 
 - [FastAPI](https://github.com/fastapi/fastapi) — 
 a modern, high-performance Python web framework for building APIs, with automatic OpenAPI documentation generation and native support for asynchronous request handling.
@@ -62,9 +62,9 @@ a lightweight, cross-platform command runner that replaces complex shell scripts
 
 [^1]: Despite using `pixi`, loading environment variables from `.env` files in `pixi tasks` is not straightforward — it requires either `direnv`, custom activation scripts, or declaring all variables directly in `pixi.toml`. Since storing configuration in `.env` files is standard practice, hardcoding variables into `pixi.toml` is not an option for this project. That leaves activation scripts or `direnv` — both of which require extra setup and add implicit behavior. Since you end up adding complexity either way, it makes more sense to pick something transparent — `just` loads `.env` files natively, requires no additional scripts or configuration, and does exactly what it says on the tin.
 
-## **Quick Start**
+## Quick Start
 
-### **I. Prerequisites**
+### I. Prerequisites
 
 - [Docker and Docker Compose](https://docs.docker.com/engine/install/).
 - [Pixi](https://pixi.sh/latest/) package manager.
@@ -74,7 +74,7 @@ a lightweight, cross-platform command runner that replaces complex shell scripts
 > 1. Update the `platforms` list in the `pixi.toml` accordingly.
 > 2. Ensure that platform-specific scripts are compatible with your operating system or replace them with equivalents.
 
-### **II. Initial Setup**
+### II. Initial Setup
 
 1. **Clone the repository**
 
@@ -140,11 +140,11 @@ a lightweight, cross-platform command runner that replaces complex shell scripts
    just api-up
    ```
 
-### **III. Testing**
+### III. Testing
 
 Once the API server is running, you can explore and test all available endpoints via the interactive Swagger UI at `http://{UVICORN_HOST}:{UVICORN_PORT}{API_DOCS_URL}`, where the values are taken from your `.env` file.
 
-### **IV. Cleanup**
+### IV. Cleanup
 
 When you finish testing:
 
@@ -157,6 +157,6 @@ When you finish testing:
     just containers-down
     ```
 
-## **License**
+## License
 
-This project is licensed under the [BSD-3-Clause License](LICENSE).
+This project is licensed under the [Apache License, Version 2.0](LICENSE).
