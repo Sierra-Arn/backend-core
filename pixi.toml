@@ -3,7 +3,7 @@ authors = ["Sierra Arn"]
 channels = ["conda-forge"]
 name = "backend-core"
 platforms = ["linux-64"]
-version = "0.1.0"
+version = "0.2.0"
 
 [dependencies]
 python = "*"
@@ -19,3 +19,8 @@ just = "*"
 bcrypt = "*"
 pyjwt = "*"
 python-json-logger = "*"
+
+[pypi-dependencies]
+scripts = { path = "./packages/scripts/", editable = true }
+shared = { path = "./packages/shared/", editable = true }
+server = { path = "./packages/server/", editable = true }

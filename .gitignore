@@ -8,6 +8,10 @@
 
 # Python-generated files
 __pycache__/
+*.egg-info/
 
-# Redis-specific files
-*.acl
+# Docker init files with embedded credentials
+**/init/
+
+# Test artifacts
+*.yaml

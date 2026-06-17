@@ -1,32 +1,23 @@
-services:
-  # =====================================================
-  # Redis Database Server Service
-  # =====================================================
-  redis-server:
-    image: docker.io/library/redis:8-alpine
-    container_name: ${REDIS_CONTAINER_NAME}
-    environment:
-      REDIS_ADMIN_NAME: ${REDIS_ADMIN_NAME}
-      REDIS_ADMIN_PASSWORD: ${REDIS_ADMIN_PASSWORD}
-      REDIS_USER_NAME: ${REDIS_USER_NAME}
-      REDIS_USER_PASSWORD: ${REDIS_USER_PASSWORD}
-    ports:
-      - "${REDIS_EXTERNAL_PORT}:${REDIS_INTERNAL_PORT}"
-    volumes:
-      - ./app/shared/redis/initialization/01-create-users.acl:/usr/local/etc/redis/01-create-users.acl
-    command: redis-server --aclfile /usr/local/etc/redis/01-create-users.acl
-    healthcheck:
-      test: ["CMD", "redis-cli", "--user", "${REDIS_ADMIN_NAME}", "--pass", "${REDIS_ADMIN_PASSWORD}", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+# Copyright (c) 2026 Ilya Snegov (aka Sierra Arn)
 
-  # =====================================================
-  # PostgreSQL Database Server Service
-  # =====================================================
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+
+#     http://www.apache.org/licenses/LICENSE-2.0
+
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# docker-compose.yml
+services:
+
   postgres-server:
     image: docker.io/library/postgres:18-alpine
-    container_name: ${POSTGRES_CONTAINER_NAME}
+    container_name: "postgres-server"
     environment:
       POSTGRES_USER: ${POSTGRES_SUPERUSER_NAME}
       POSTGRES_PASSWORD: ${POSTGRES_SUPERUSER_PASSWORD}
@@ -37,9 +28,36 @@ services:
     ports:
       - "${POSTGRES_EXTERNAL_PORT}:${POSTGRES_INTERNAL_PORT}"
     volumes:
-      - ./app/shared/postgres/initialization:/docker-entrypoint-initdb.d
+      - ./postgres/init/01-create-user.sql:/docker-entrypoint-initdb.d/01-create-user.sql:ro
+    networks:
+      - backend-core
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      test: ["CMD", "pg_isready", "-U", "${POSTGRES_SUPERUSER_NAME}", "-d", "${POSTGRES_SYSTEM_DB_NAME}"]
       interval: 10s
       timeout: 5s
       retries: 5
+
+  redis-server:
+    image: docker.io/library/redis:8-alpine
+    container_name: "redis-server"
+    environment:
+      REDIS_ADMIN_NAME: ${REDIS_ADMIN_NAME}
+      REDIS_ADMIN_PASSWORD: ${REDIS_ADMIN_PASSWORD}
+      REDIS_USER_NAME: ${REDIS_USER_NAME}
+      REDIS_USER_PASSWORD: ${REDIS_USER_PASSWORD}
+    ports:
+      - "${REDIS_EXTERNAL_PORT}:${REDIS_INTERNAL_PORT}"
+    volumes:
+      - ./redis/init/01-create-users.acl:/usr/local/etc/redis/01-create-users.acl:ro
+    command: redis-server --aclfile /usr/local/etc/redis/01-create-users.acl
+    networks:
+      - backend-core
+    healthcheck:
+      test: ["CMD", "redis-cli", "--user", "${REDIS_ADMIN_NAME}", "--pass", "${REDIS_ADMIN_PASSWORD}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  backend-core:
+    driver: bridge
