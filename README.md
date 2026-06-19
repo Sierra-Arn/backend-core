@@ -1,4 +1,4 @@
-# **Backend Core**
+# Backend Core
 
 *An educational project demonstrating how to build a backend server with Python, covering authentication, authorization, rate limiting, access logging and global error handling.*
 
@@ -21,6 +21,9 @@ backend-core/
 │   └── scripts/                  # Standalone automation scripts for environment bootstrapping,
 │                                 # infrastructure initialization, and auxiliary utility tasks.
 │
+├── docs/                         # Technical documentation covering project dependencies,
+│                                 # codebase layout, and request flow diagrams for every endpoint.
+|
 ├── migrations/                   # Alembic migration environment and database schema change scripts.
 │
 ├── docker-compose.yml            # Docker Compose stack for running infrastructure services
