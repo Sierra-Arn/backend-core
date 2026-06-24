@@ -18,7 +18,7 @@ from .config import postgres_config
 
 
 async_engine = create_async_engine(
-    postgres_config.async_database_url,
+    postgres_config.database_url,
     echo=postgres_config.echo,
 
     # Enables SQLAlchemy 2.0-style API semantics, ensuring forward compatibility

@@ -21,8 +21,7 @@
 | python-json-logger | [nhairs/python-json-logger](https://github.com/nhairs/python-json-logger) | JSON log formatter | Formats all log records as structured JSON, enabling consistent machine-readable output across every package. |
 | SQLAlchemy | [sqlalchemy/sqlalchemy](https://github.com/sqlalchemy/sqlalchemy) | ORM and database toolkit | Maps Python classes to PostgreSQL tables and manages sessions for all database interactions. |
 | Alembic | [sqlalchemy/alembic](https://github.com/sqlalchemy/alembic) | Database migration tool | Manages versioned schema changes and seed data via sequential migration scripts. |
-| asyncpg | [MagicStack/asyncpg](https://github.com/MagicStack/asyncpg) | Async PostgreSQL driver | Handles all database connections at runtime via SQLAlchemy's async engine. |
-| psycopg2-binary | [psycopg/psycopg2](https://github.com/psycopg/psycopg2) | Sync PostgreSQL driver | Used exclusively by Alembic during migration execution, which runs in a synchronous context. |
+| psycopg | [psycopg/psycopg](https://github.com/psycopg/psycopg) | Sync + async PostgreSQL driver | Handles all database connections via SQLAlchemy's `postgresql+psycopg` dialect — async engine at runtime and sync engine for Alembic migrations alike. |
 | redis-py | [redis/redis-py](https://github.com/redis/redis-py) | Official Redis client | Manages refresh token storage, JWT blacklisting, and sliding window rate limiting. |
 | bcrypt | [pyca/bcrypt](https://github.com/pyca/bcrypt) | Password hashing library | Hashes passwords at registration and verifies them at login using the bcrypt algorithm. |
 | PyJWT | [jpadilla/pyjwt](https://github.com/jpadilla/pyjwt) | JWT library | Issues, signs, and validates JWT access tokens throughout the authentication flow. |
