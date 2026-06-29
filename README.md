@@ -6,39 +6,47 @@
 
 ```
 backend-core/
-├── packages/                     # Monorepo root containing all independently deployable Python modules and
-│   │                             # shared libraries. Each package strictly follows the standard `src/` layout
-│   │                             # (e.g., `packages/server/src/server/`) for clean imports and packaging.
+├── packages/           # Monorepo root containing all independently deployable
+│   │                   # Python modules and shared libraries. Each package
+│   │                   # strictly follows the standard `src/` layout (e.g.
+│   │                   # `packages/server/src/server/`) for clean imports and
+│   │                   # packaging.
 │   │
-│   ├── server/                   # FastAPI application handling HTTP routing, request validation,
-│   │                             # authentication, authorization, rate limiting, access logging,
-│   │                             # and global error handling.
+│   ├── server/         # FastAPI application handling HTTP routing, request
+│   │                   # validation, authentication, authorization, rate
+│   │                   # limiting, access logging, and global error handling.
 │   │
-│   ├── shared/                   # Cross-process shared infrastructure. Contains base configurations
-│   │                             # and unified client abstractions for external services
-│   │                             # (e.g., PostgreSQL, Redis).
+│   ├── shared/         # Cross-process shared infrastructure. Contains base
+│   │                   # configurations and unified client abstractions for
+│   │                   # external services (e.g. PostgreSQL, Redis).
 │   │
-│   └── scripts/                  # Standalone automation scripts for environment bootstrapping,
-│                                 # infrastructure initialization, and auxiliary utility tasks.
+│   └── scripts/        # Standalone automation scripts for environment
+│                       # bootstrapping, infrastructure initialization, and
+│                       # auxiliary utility tasks.
 │
-├── docs/                         # Technical documentation covering project dependencies,
-│                                 # codebase layout, and request flow diagrams for every endpoint.
-|
-├── migrations/                   # Alembic migration environment and database schema change scripts.
+├── docs/               # Technical documentation covering project dependencies,
+│                       # codebase layout, and request flow diagrams for every
+│                       # endpoint.
 │
-├── docker-compose.yml            # Docker Compose stack for running infrastructure services
-│                                 # (PostgreSQL, Redis) locally.
+├── migrations/         # Alembic migration environment and database schema
+│                       # change scripts.
 │
-├── .env.example                  # Environment variable template. Copied to .env during bootstrapping
-│                                 # with auto-generated credentials for credential fields.
+├── docker-compose.yml  # Docker Compose stack for running infrastructure
+│                       # services (PostgreSQL, Redis) locally.
 │
-├── pixi.toml                     # Pixi environment configuration defining dependency groups.
+├── .env.example        # Environment variable template. Copied to .env during
+│                       # bootstrapping with auto-generated credentials for
+│                       # credential fields.
 │
-├── pixi.lock                     # Fully resolved and reproducible dependency lockfile.
+├── pixi.toml           # Pixi environment configuration defining dependency
+│                       # groups.
 │
-└── justfile                      # Task runner: bootstrap commands, database migration targets,
-                                  # runtime process launchers, and Docker Compose shortcuts.
-                                  # Automatically manages pixi environment context per recipe.
+├── pixi.lock           # Fully resolved and reproducible dependency lockfile.
+│
+└── justfile            # Task runner: bootstrap commands, database migration
+                        # targets, runtime process launchers, and Docker Compose
+                        # shortcuts. Automatically manages pixi environment
+                        # context per recipe.
 ```
 
 ## Quick Start
