@@ -15,8 +15,8 @@
 # packages/server/src/server/modules/admin/users/update/routes.py
 from fastapi import Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from postgres_lib import UserRepository
-from auth_lib import PasswordRepository, PermissionEnum
+from postgres_lib import UserRepository, PermissionEnum
+from password_lib import PasswordService
 from .schemas import UpdateUserRequest
 from ..router import users_admin_router
 from .....dependencies import get_async_db_session, require_permission
@@ -73,7 +73,7 @@ async def update_user_route(
     updated_fields = {}
 
     if "password" in body.model_fields_set and body.password is not None:
-        updated_fields["hashed_password"] = PasswordRepository.hash(body.password)
+        updated_fields["hashed_password"] = PasswordService.hash(body.password)
 
     if "is_verified" in body.model_fields_set and body.is_verified is not None:
         updated_fields["is_verified"] = body.is_verified

@@ -24,8 +24,9 @@ class RedisConfig(BaseConfig):
 
     Stores connection parameters for accessing a Redis instance. All fields
     support resolution from environment variables prefixed with REDIS_ following
-    the BaseConfig precedence rules. The connection_url property assembles a
-    complete Redis URI from the configured credentials and endpoint.
+    the BaseConfig precedence rules. Each logical concern — JWT blacklist,
+    refresh tokens, and rate limiting — is isolated to its own Redis database,
+    allowing independent flushing and monitoring.
 
     Attributes
     ----------
@@ -39,28 +40,22 @@ class RedisConfig(BaseConfig):
         Username for Redis ACL-based authentication.
     user_password : str
         Password for Redis authentication; treated as sensitive data.
-    db_index : int
-        Redis database number to connect to. Default is 0.
-    blacklist_prefix : str
-        Key prefix for JWT blacklist entries. Keys are structured as
-        blacklist_prefix:jti and map to the remaining TTL of the token.
-        Default is "blacklist".
-    refresh_token_prefix : str
-        Key prefix for opaque refresh token entries. Keys are structured
-        as refresh_token_prefix:token_value and map to the owning user_id.
-        Default is "refresh_token".
-    rate_limit_prefix : str
-        Key prefix for rate limiting entries. Keys are structured as
-        rate_limit_prefix:ip_address and map to the request count within
-        the current window. Default is "rl".
-    rate_limit_max_requests : int
-        Maximum number of requests a single IP address may send within
-        one rate limit window. Default is 100.
-    rate_limit_window_seconds : int
-        Duration of the sliding rate limit window in seconds. Default is 60.
-    connection_url : str
-        Read-only property assembling the full Redis connection URI with
-        credentials.
+    blacklist_db_index : int
+        Redis database number used for JWT blacklist entries. Default is 0.
+    refresh_token_db_index : int
+        Redis database number used for opaque refresh token entries.
+        Default is 1.
+    rate_limit_db_index : int
+        Redis database number used for rate limiting counters. Default is 2.
+    blacklist_url : str
+        Read-only property assembling the Redis connection URI for the
+        JWT blacklist database.
+    refresh_token_url : str
+        Read-only property assembling the Redis connection URI for the
+        refresh token database.
+    rate_limit_url : str
+        Read-only property assembling the Redis connection URI for the
+        rate limiting database.
     """
 
     env_prefix: ClassVar[str] = "REDIS_"
@@ -69,29 +64,67 @@ class RedisConfig(BaseConfig):
     port: int = Field(default=6379, ge=1, le=65535)
     user_name: str
     user_password: str
-    db_index: int = Field(default=0)
-    blacklist_prefix: str = "blacklist"
-    refresh_token_prefix: str = "refresh_token"
-    rate_limit_prefix: str = "rl"
-    rate_limit_max_requests: int = Field(default=100, ge=1)
-    rate_limit_window_seconds: int = Field(default=60, ge=1)
+    blacklist_db_index: int = Field(default=0)
+    refresh_token_db_index: int = Field(default=1)
+    rate_limit_db_index: int = Field(default=2)
 
-    @property
-    def connection_url(self) -> str:
+    def _build_url(self, db: int) -> str:
         """
-        Build Redis connection URL from configuration settings.
+        Assemble a Redis connection URI for the given database index.
+
+        Parameters
+        ----------
+        db : int
+            Redis database number to include as the URI path component.
 
         Returns
         -------
         str
             Complete Redis connection URI in the format
-            redis://username:password@host:port
+            redis://username:password@host:port/db.
         """
         return (
             f"redis://{self.user_name}:"
             f"{self.user_password}@"
-            f"{self.host}:{self.port}"
+            f"{self.host}:{self.port}/"
+            f"{db}"
         )
+
+    @property
+    def blacklist_url(self) -> str:
+        """
+        Build Redis connection URL for the JWT blacklist database.
+
+        Returns
+        -------
+        str
+            Redis URI pointing to blacklist_db_index.
+        """
+        return self._build_url(self.blacklist_db_index)
+
+    @property
+    def refresh_token_url(self) -> str:
+        """
+        Build Redis connection URL for the refresh token database.
+
+        Returns
+        -------
+        str
+            Redis URI pointing to refresh_token_db_index.
+        """
+        return self._build_url(self.refresh_token_db_index)
+
+    @property
+    def rate_limit_url(self) -> str:
+        """
+        Build Redis connection URL for rate limiting counters.
+
+        Returns
+        -------
+        str
+            Redis URI pointing to rate_limit_db_index.
+        """
+        return self._build_url(self.rate_limit_db_index)
 
 
 redis_config = RedisConfig()

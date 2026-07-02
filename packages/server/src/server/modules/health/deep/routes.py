@@ -17,8 +17,10 @@ import asyncio
 from fastapi import status
 from .schemas import DeepHealthResponse
 from .domen import (
-    check_postgres, 
-    check_redis
+    check_postgres,
+    check_blacklist_redis,
+    check_refresh_token_redis,
+    check_rate_limit_redis,
 )
 from ..router import health_router
 from ..types import ServiceStatus
@@ -29,20 +31,23 @@ from ....config import server_config
     "/deep/",
     status_code=status.HTTP_200_OK,
     response_model=DeepHealthResponse,
-    summary="Deep Health check",
-    description=("""
-        Returns the availability status of the application and its dependencies. 
-        Each field indicates whether the corresponding service is reachable or unreachable.
-    """)
+    summary="Deep health check",
+    description=(
+        "Returns the availability status of the application and all its "
+        "dependencies. Each field indicates whether the corresponding service "
+        "is reachable. If the overall probe exceeds the configured timeout "
+        "every dependency is marked unavailable."
+    ),
 )
 async def deep_health_route() -> DeepHealthResponse:
     """
     Execute concurrent health probes for all external dependencies.
 
-    Runs PostgreSQL and Redis checks in parallel. If all probes succeed
-    the overall status is OK; if any probe fails the overall status is
-    DEGRADED so that orchestrators can route traffic away from the instance
-    or trigger an alert without marking it fully unavailable.
+    Runs PostgreSQL and all three Redis database checks in parallel via
+    asyncio.gather. If all probes succeed the overall status is OK; if any
+    probe fails the overall status is DEGRADED so that orchestrators can
+    route traffic away from the instance or trigger an alert without marking
+    it fully unavailable.
 
     Returns
     -------
@@ -51,34 +56,46 @@ async def deep_health_route() -> DeepHealthResponse:
 
     Notes
     -----
-    All probes must complete within server_config.deep_health_timeout
-    seconds. On timeout every dependency is marked UNAVAILABLE and the
-    overall status is set to UNAVAILABLE to signal orchestrators that the
-    instance cannot serve traffic safely.
+    All probes must complete within server_config.deep_health_timeout seconds.
+    On timeout every dependency is marked UNAVAILABLE and the overall status
+    is set to UNAVAILABLE to signal orchestrators that the instance cannot
+    serve traffic safely.
     """
     try:
-        postgres, redis = await asyncio.wait_for(
-            asyncio.gather(
-                check_postgres(),
-                check_redis(),
-            ),
-            timeout=server_config.deep_health_timeout,
+        postgres, blacklist_redis, refresh_token_redis, rate_limit_redis = (
+            await asyncio.wait_for(
+                asyncio.gather(
+                    check_postgres(),
+                    check_blacklist_redis(),
+                    check_refresh_token_redis(),
+                    check_rate_limit_redis(),
+                ),
+                timeout=server_config.deep_health_timeout,
+            )
         )
     except asyncio.TimeoutError:
+        unavailable = ServiceStatus.UNAVAILABLE
         return DeepHealthResponse(
-            status=ServiceStatus.UNAVAILABLE,
-            postgres=ServiceStatus.UNAVAILABLE,
-            redis=ServiceStatus.UNAVAILABLE,
+            status=unavailable,
+            postgres=unavailable,
+            blacklist_redis=unavailable,
+            refresh_token_redis=unavailable,
+            rate_limit_redis=unavailable,
         )
 
     overall = (
         ServiceStatus.OK
-        if all(s == ServiceStatus.OK for s in (postgres, redis))
+        if all(
+            s == ServiceStatus.OK
+            for s in (postgres, blacklist_redis, refresh_token_redis, rate_limit_redis)
+        )
         else ServiceStatus.DEGRADED
     )
 
     return DeepHealthResponse(
         status=overall,
         postgres=postgres,
-        redis=redis,
+        blacklist_redis=blacklist_redis,
+        refresh_token_redis=refresh_token_redis,
+        rate_limit_redis=rate_limit_redis,
     )

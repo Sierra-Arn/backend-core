@@ -12,10 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# packages/shared/src/postgres_lib/models/__init__.py
-from .base import Base, IdModel, CreatedAtMixin
-from .user import User
-from .user_role import UserRole
-from .role import Role
-from .role_permission import RolePermission
-from .types import PermissionEnum, RoleEnum, PermissionSQL
+# packages/services/src/tokens_lib/__init__.py
+from .config import tokens_config
+from .services import AccessTokenService, RefreshTokenService

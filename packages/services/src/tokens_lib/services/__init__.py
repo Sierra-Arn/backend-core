@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# packages/shared/src/redis_lib/repositories/__init__.py
-from .jwt_blacklist import JwtBlacklistRepository 
-from .rate_limit import RateLimitRepository
-from .refresh_token import RefreshTokenRepository
+# packages/services/src/tokens_lib/services/__init__.py
+from .access_token import AccessTokenService
+from .refresh_token import RefreshTokenService

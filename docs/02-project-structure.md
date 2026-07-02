@@ -6,42 +6,46 @@
 
 ```
 backend-core/
-├── packages/                     # Monorepo root containing all independently deployable Python modules
-│   │                             # and shared libraries. Each package strictly follows the standard
-│   │                             # src/ layout (e.g., packages/server/src/server/) for clean imports.
+├── packages/           # Monorepo root containing all independently deployable Python modules
+│   │                   # and shared libraries. Each package strictly follows the standard
+│   │                   # src/ layout (e.g., packages/server/src/server/) for clean imports.
 │   │
-│   ├── server/                   # FastAPI application handling HTTP routing, request validation,
-│   │                             # authentication, authorization, rate limiting, access logging,
-│   │                             # and global error handling.
+│   ├── server/         # FastAPI application handling HTTP routing, request validation,
+│   │                   # authentication, authorization, rate limiting, access logging,
+│   │                   # and global error handling.
 │   │
-│   ├── shared/                   # Cross-process shared infrastructure. Contains base configurations
-│   │                             # and unified client abstractions for external services
-│   │                             # (PostgreSQL, Redis) and authentication utilities.
+│   ├── shared/         # Cross-process shared infrastructure. Contains base
+│   │                   # configurations and unified client abstractions for
+│   │                   # external services.
 │   │
-│   └── scripts/                  # Standalone automation scripts for environment bootstrapping,
-│                                 # infrastructure initialization, and auxiliary utility tasks.
+│   ├── services/       # Cross-process business logic built on top of shared
+│   │                   # infrastructure. Contains self-contained service
+│   │                   # modules that implement domain-specific behaviour.
+│   │
+│   └── scripts/        # Standalone automation scripts for environment bootstrapping,
+│                       # infrastructure initialization, and auxiliary utility tasks.
 │
-├── migrations/                   # Alembic migration environment and database schema change scripts.
+├── migrations/         # Alembic migration environment and database schema change scripts.
 │
-├── postgres/                     # PostgreSQL initialization scripts generated from environment
-│                                 # variables at bootstrap time.
+├── postgres/           # PostgreSQL initialization scripts generated from environment
+│                       # variables at bootstrap time.
 │
-├── redis/                        # Redis ACL initialization scripts generated from environment
-│                                 # variables at bootstrap time.
+├── redis/              # Redis ACL initialization scripts generated from environment
+│                       # variables at bootstrap time.
 │
-├── docker-compose.yml            # Docker Compose stack for running infrastructure services
-│                                 # (PostgreSQL, Redis) locally.
+├── docker-compose.yml  # Docker Compose stack for running infrastructure services
+│                       # (PostgreSQL, Redis) locally.
 │
-├── .env.example                  # Environment variable template. Copied to .env during bootstrapping
-│                                 # with auto-generated credentials for credential fields.
+├── .env.example        # Environment variable template. Copied to .env during bootstrapping
+│                       # with auto-generated credentials for credential fields.
 │
-├── pixi.toml                     # Pixi environment configuration defining dependency groups.
+├── pixi.toml           # Pixi environment configuration defining dependency groups.
 │
-├── pixi.lock                     # Fully resolved and reproducible dependency lockfile.
+├── pixi.lock           # Fully resolved and reproducible dependency lockfile.
 │
-└── justfile                      # Task runner: bootstrap commands, database migration targets,
-                                  # runtime process launchers, and Docker Compose shortcuts.
-                                  # Automatically manages pixi environment context per recipe.
+└── justfile            # Task runner: bootstrap commands, database migration targets,
+                        # runtime process launchers, and Docker Compose shortcuts.
+                        # Automatically manages pixi environment context per recipe.
 ```
 
 Every file contains comprehensive inline comments to explain the code. 
@@ -78,37 +82,37 @@ server/
     │
     └── modules/                # Route handlers grouped by domain resource.
         │
-        ├── health/                         # Liveness and readiness health check endpoints.
+        ├── health/             # Liveness and readiness health check endpoints.
         │   │
-        │   ├── shallow/                    # Shallow health check (API process only).
-        │   └── deep/                       # Deep health check (PostgreSQL and Redis connectivity).
+        │   ├── shallow/        # Shallow health check (API process only).
+        │   └── deep/           # Deep health check (PostgreSQL and Redis connectivity).
         │
-        ├── auth/                           # Authentication endpoints.
+        ├── auth/               # Authentication endpoints.
         │   │
-        │   ├── register/                   # POST /auth/register — account creation.
-        │   ├── login/                      # POST /auth/login — credential verification and token issuance.
-        │   ├── logout/                     # POST /auth/logout — access token blacklisting and refresh revocation.
-        │   └── refresh/                    # POST /auth/refresh — access token reissuance.
+        │   ├── register/       # POST /auth/register.
+        │   ├── login/          # POST /auth/login .
+        │   ├── logout/         # POST /auth/logout.
+        │   └── refresh/        # POST /auth/refresh.
         │
-        ├── account/                        # Authenticated user self-service endpoints.
+        ├── account/                # Authenticated user self-service endpoints.
         │   │
-        │   ├── me/                         # GET /account/me — current user profile.
-        │   ├── change_bio/                 # PATCH /account/change-bio — biographical text update.
-        │   └── change_password/            # PATCH /account/change-password — password change and session revocation.
+        │   ├── me/                 # GET /account/me.
+        │   ├── change_bio/         # PATCH /account/change-bio.
+        │   └── change_password/    # PATCH /account/change-password.
         │
-        └── admin/                          # Administrative endpoints restricted by RBAC permissions.
+        └── admin/                  # Administrative endpoints restricted by RBAC permissions.
             │
-            ├── users/                      # User management.
+            ├── users/              # User management.
             │   │
-            │   ├── get/                    # GET /admin/users/ and /admin/users/{id}.
-            │   ├── update/                 # PATCH /admin/users/{id} — partial field update.
-            │   ├── delete/                 # DELETE /admin/users/{id}.
-            │   └── manage_roles/           # POST/DELETE /admin/users/{id}/roles — role assignment.
+            │   ├── get/            # GET /admin/users/ and /admin/users/{id}.
+            │   ├── update/         # PATCH /admin/users/{id}.
+            │   ├── delete/         # DELETE /admin/users/{id}.
+            │   └── manage_roles/   # POST/DELETE /admin/users/{id}/roles.
             │
             └── roles/                      # Role management.
                 │
                 ├── get/                    # GET /admin/roles/ and /admin/roles/{id}.
-                ├── create/                 # POST /admin/roles/ — role creation.
+                ├── create/                 # POST /admin/roles/.
                 ├── delete/                 # DELETE /admin/roles/{id}.
                 └── manage_permissions/     # POST/DELETE /admin/roles/{id}/permissions.
 ```
@@ -119,67 +123,66 @@ The `exception_handlers/` directory translates internal exceptions into generic,
 
 ### 2. `packages/shared/`
 
-Centralizes all infrastructure client code and shared utilities consumed by the API server. Implements the concrete clients for PostgreSQL and Redis, authentication logic, and shared Pydantic schema mixins.
+Centralizes all infrastructure client code and shared utilities consumed across the system. Implements the concrete clients for PostgreSQL and Redis, base configuration primitives, and shared Pydantic schema mixins.
 
 ```
 shared/
 ├── pyproject.toml
 └── src/
     ├── base_lib/                   # Foundational utilities shared across all packages.
-    │   │
-    │   ├── base_config.py          # Base configuration class with environment variable loading.
-    │   └── logger.py               # Structured JSON logging setup.
+    │   ├── base_config.py          # Base Pydantic settings class with environment variable loading.
+    │   └── logger.py               # Structured JSON logging setup shared across all processes.
     │
     ├── postgres_lib/               # Relational database layer.
-    │   │
     │   ├── config.py               # PostgreSQL connection settings.
     │   ├── session.py              # SQLAlchemy async session factory.
-    │   │
     │   ├── models/                 # ORM models for domain entities.
-    │   │   │
-    │   │   ├── base.py             # Abstract base models and mixins (IdModel, CreatedAtMixin, etc.).
-    │   │   ├── types.py            # PermissionEnum and PermissionSQL column type.
+    │   │   ├── base.py             # Declarative base and shared mixins (id, created_at).
+    │   │   ├── types.py            # Custom SQLAlchemy column types.
     │   │   ├── user.py             # User model.
     │   │   ├── role.py             # Role model.
     │   │   ├── role_permission.py  # Role-permission association table.
     │   │   └── user_role.py        # User-role association table.
-    │   │
-    │   └── repositories/           # Data access layer (stateless classmethods, Repository pattern).
-    │       │
-    │       ├── base.py             # Generic BaseRepository with CRUD operations.
-    │       ├── user.py             # User queries and role assignment operations.
-    │       └── role.py             # Role queries and permission assignment operations.
+    │   └── repositories/           # Stateless data access layer following the Repository pattern.
+    │       ├── base.py             # Generic BaseRepository with common CRUD classmethods.
+    │       ├── user.py             # User-specific queries and persistence operations.
+    │       └── role.py             # Role-specific queries and permission assignment operations.
     │
     ├── redis_lib/                  # In-memory store client.
-    │   │
-    │   ├── config.py               # Redis connection settings and key prefix configuration.
-    │   ├── client.py               # Shared async Redis client instance.
-    │   │
-    │   └── repositories/           # Stateless Redis data access layer.
-    │       │
-    │       ├── jwt_blacklist.py    # Revoked access token storage (jti → TTL).
-    │       ├── refresh_token.py    # Opaque refresh token storage (token → user_id).
-    │       └── rate_limit.py       # Sliding window request counter per IP address.
-    │
-    ├── auth_lib/                   # Authentication and authorization utilities.
-    │   ├── config.py               # JWT and bcrypt settings.
-    │   │
-    │   └── repositories/           # Stateless auth operations.
-    │       │
-    │       ├── token.py            # JWT issuance, decoding, and opaque token generation.
-    │       └── password.py         # Bcrypt hashing and verification.
+    │   ├── config.py               # Redis connection settings with per-database URL properties.
+    │   └── client.py               # Async Redis client instances keyed by logical database.
     │
     └── schemas_lib/                # Shared Pydantic field mixins for request and response schemas.
-        │
-        ├── user.py                 # IdMixin, EmailMixin, PasswordMixin, BioMixin, etc.
-        ├── role.py                 # NameMixin.
-        ├── token.py                # AccessTokenMixin, RefreshTokenMixin.
-        └── error.py                # ErrorResponse schema.
+        ├── error.py                # ErrorResponse schema.
+        ├── user.py                 # User field mixins.
+        ├── role.py                 # Role field mixins.
+        └── token.py                # Access and refresh token field mixins.
 ```
 
-Keeping this layer separate ensures that infrastructure access patterns are defined once and consumed uniformly, preventing duplication and ensuring consistent behavior across the system.
+### 3. `packages/services/`
 
-### 3. `packages/scripts/`
+Centralizes cross-process business logic built on top of shared infrastructure. Each library implements a self-contained domain concern and is consumed by the server.
+
+```
+services/
+├── pyproject.toml
+└── src/
+    ├── password_lib/               # Password hashing and verification.
+    │   ├── config.py               # Bcrypt cost factor and algorithm settings.
+    │   └── service.py              # Hash and verify operations via bcrypt.
+    │
+    ├── rate_limit_lib/             # IP and account based sliding window rate limiting.
+    │   ├── config.py               # Maximum requests and window duration settings.
+    │   └── service.py              # Sliding window counter operations against Redis.
+    │
+    └── tokens_lib/                 # JWT access token and opaque refresh token management.
+        ├── config.py               # JWT secret, algorithm, and token lifetime settings.
+        └── services/
+            ├── access_token.py     # JWT issuance, decoding, and blacklist revocation.
+            └── refresh_token.py    # Opaque refresh token generation, persistence, and revocation.
+```
+
+### 4. `packages/scripts/`
 
 Standalone automation scripts for environment bootstrapping and developer utilities. Not part of the runtime application but essential for development workflow.
 
@@ -200,7 +203,7 @@ The `quick_start.py` script orchestrates infrastructure provisioning, database m
 
 ## Infrastructure Directories
 
-### 4. `migrations/`
+### 5. `migrations/`
 
 Alembic migration environment managing the evolution of the database schema. Contains the configuration file (`alembic.ini`), migration script template, and all versioned migration files including the initial schema and seed data.
 
@@ -218,7 +221,7 @@ Migrations are generated via `just db-revision` and applied via `just db-migrate
 
 The Alembic environment lives outside `packages/` because it is invoked directly via the `alembic` CLI rather than through Python module conventions, and does not follow package layout rules.
 
-### 5. `postgres/` and `redis/`
+### 6. `postgres/` and `redis/`
 
 Infrastructure initialization artifacts generated by the scripts in `packages/scripts/utils/` from environment variables at bootstrap time.
 

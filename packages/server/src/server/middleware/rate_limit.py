@@ -19,7 +19,7 @@ from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from starlette.responses import Response
-from redis_lib import RateLimitRepository
+from rate_limit_lib import RateLimitService
 from schemas_lib import ErrorResponse
 
 logger = logging.getLogger(__name__)
@@ -66,7 +66,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         """
         ip = request.client.host
 
-        if not await RateLimitRepository.is_allowed(ip=ip):
+        if not await RateLimitService.is_allowed(ip):
             logger.warning(
                 "Rate limit exceeded",
                 extra={

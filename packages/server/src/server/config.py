@@ -41,8 +41,7 @@ class ServerConfig(BaseConfig):
         Default is LogLevel.INFO.
     title : str
         Human-readable service name displayed in the generated OpenAPI
-        schema and documentation interfaces. Default is
-        "Human Pose Estimation Service".
+        schema and documentation interfaces. Default is "Backend Core".
     description : str
         Service overview rendered in the documentation UI describing
         purpose, scope, and key features. Default is the canonical 
@@ -63,8 +62,7 @@ class ServerConfig(BaseConfig):
     deep_health_timeout : float
         Maximum time in seconds allowed for the deep health check to
         complete all dependency probes before returning unavailable.
-        Controls the asyncio wait_for deadline applied to concurrent
-        database, cache, storage, and broker checks. Default is 3.0.
+        Default is 3.0.
     """
 
     env_prefix: ClassVar[str] = "SERVER_"

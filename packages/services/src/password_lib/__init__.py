@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# packages/shared/src/auth_lib/__init__.py
-from .config import auth_config
-from .repositories import TokenRepository, PasswordRepository
-from .permissions import PermissionEnum
+# packages/services/src/password_lib/__init__.py
+from .config import password_config
+from .service import PasswordService

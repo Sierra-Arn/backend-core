@@ -15,31 +15,36 @@
 # packages/server/src/server/modules/health/deep/schemas.py
 from pydantic import BaseModel, ConfigDict, Field
 from ..types import ServiceStatus
- 
- 
+
+
 class DeepHealthResponse(BaseModel):
     """
-    Response body for deep health check endpoint.
+    Response body for the deep health check endpoint.
 
-    Reports the operational status of the application and its external
-    dependencies. Used for comprehensive readiness probes and diagnostic
+    Reports the operational status of the application and each external
+    dependency. Used for comprehensive readiness probes and diagnostic
     dashboards.
     """
 
     status: ServiceStatus = Field(
-        description="""
-            Overall application status derived from dependency states. 
-            Returns ok when all critical services are reachable; 
-            degraded when one or more are unavailable.
-        """
+        description=(
+            "Overall application status derived from dependency states. "
+            "Returns ok when all critical services are reachable; "
+            "degraded when one or more are unavailable; "
+            "unavailable when the health check timed out entirely."
+        )
     )
-
     postgres: ServiceStatus = Field(
         description="PostgreSQL availability. ok if a test query succeeds; unavailable otherwise."
     )
-
-    redis: ServiceStatus = Field(
-        description="Redis availability. ok if a PING command succeeds; unavailable otherwise."
+    blacklist_redis: ServiceStatus = Field(
+        description="JWT blacklist Redis availability. ok if a PING command succeeds; unavailable otherwise."
+    )
+    refresh_token_redis: ServiceStatus = Field(
+        description="Refresh token Redis availability. ok if a PING command succeeds; unavailable otherwise."
+    )
+    rate_limit_redis: ServiceStatus = Field(
+        description="Rate limiting Redis availability. ok if a PING command succeeds; unavailable otherwise."
     )
 
     model_config = ConfigDict(
@@ -49,7 +54,9 @@ class DeepHealthResponse(BaseModel):
                 {
                     "status": "ok",
                     "postgres": "ok",
-                    "redis": "ok",
+                    "blacklist_redis": "ok",
+                    "refresh_token_redis": "ok",
+                    "rate_limit_redis": "ok",
                 }
             ]
         },

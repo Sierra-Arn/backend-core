@@ -17,8 +17,7 @@ from datetime import datetime, timezone
 from fastapi import Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from postgres_lib import UserRepository
-from auth_lib import TokenRepository
-from redis_lib import RefreshTokenRepository
+from tokens_lib import AccessTokenService, RefreshTokenService
 from .schemas import RefreshRequest, RefreshResponse
 from ..router import auth_router
 from ....dependencies import get_async_db_session
@@ -65,7 +64,7 @@ async def refresh_route(
     HTTPException
         401 Unauthorized if the refresh token does not exist or has expired.
     """
-    user_id = await RefreshTokenRepository.get_user_id(token=body.refresh_token)
+    user_id = await RefreshTokenService.get_user_id(token=body.refresh_token)
     if user_id is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -85,7 +84,7 @@ async def refresh_route(
         for perm in role.permissions
     })
 
-    access_token = TokenRepository.create_access_token(
+    access_token = AccessTokenService.create(
         user_id=user.id,
         permissions=permissions,
         now=datetime.now(timezone.utc),

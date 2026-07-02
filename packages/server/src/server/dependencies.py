@@ -19,8 +19,7 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 from postgres_lib import async_session_factory
-from auth_lib import TokenRepository
-from redis_lib import JwtBlacklistRepository
+from tokens_lib import AccessTokenService, RefreshTokenService
 
 
 async def get_async_db_session() -> AsyncGenerator[AsyncSession, None]:
@@ -78,7 +77,7 @@ async def get_current_user(
     token = credentials.credentials
 
     try:
-        payload = TokenRepository.decode_access_token(token)
+        payload = AccessTokenService.decode(token)
     except jwt.ExpiredSignatureError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -90,7 +89,7 @@ async def get_current_user(
             detail="Invalid access token.",
         )
 
-    if await JwtBlacklistRepository.is_revoked(jti=payload["jti"]):
+    if await RefreshTokenService.exists(payload["jti"]):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Access token has been revoked.",

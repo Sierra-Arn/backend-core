@@ -76,7 +76,7 @@ def generate_acl_file(output_dir: Path) -> Path:
 
     acl_content = (
         f"user {env_vars['REDIS_ADMIN_NAME']} on >{env_vars['REDIS_ADMIN_PASSWORD']} ~* &* +@all\n"
-        f"user {env_vars['REDIS_USER_NAME']} on >{env_vars['REDIS_USER_PASSWORD']} ~* +get +set +del +exists +expire +pexpire +ttl +pttl +mget +mset +setex +zadd +zcard +zremrangebyscore +ping\n"
+        f"user {env_vars['REDIS_USER_NAME']} on >{env_vars['REDIS_USER_PASSWORD']} ~* +get +set +del +exists +expire +pexpire +ttl +pttl +mget +mset +setex +zadd +zcard +zremrangebyscore +ping +select\n"
         "user default off nopass\n"
     )
 

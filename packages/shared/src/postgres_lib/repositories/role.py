@@ -16,8 +16,7 @@
 from sqlalchemy import select, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 from .base import BaseRepository
-from ..models import Role, RolePermission
-from auth_lib import PermissionEnum
+from ..models import Role, RolePermission, PermissionEnum
 
 
 class RoleRepository(BaseRepository):

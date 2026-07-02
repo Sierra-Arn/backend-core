@@ -17,8 +17,8 @@ from datetime import datetime, timezone
 from fastapi import Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from postgres_lib import UserRepository
-from auth_lib import auth_config, PasswordRepository, TokenRepository
-from redis_lib import RefreshTokenRepository
+from tokens_lib import RefreshTokenService, AccessTokenService
+from password_lib import PasswordService
 from .schemas import LoginRequest, LoginResponse
 from ..router import auth_router
 from ....dependencies import get_async_db_session
@@ -70,7 +70,7 @@ async def login_route(
         load_permissions=True,
     )
 
-    if user is None or not PasswordRepository.verify(body.password, user.hashed_password):
+    if user is None or not PasswordService.verify(body.password, user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid email or password.",
@@ -83,17 +83,16 @@ async def login_route(
     })
 
     now = datetime.now(timezone.utc)
-    access_token = TokenRepository.create_access_token(
+    access_token = AccessTokenService.create(
         user_id=user.id,
         permissions=permissions,
         now=now,
     )
-    refresh_token = TokenRepository.create_refresh_token()
+    refresh_token = RefreshTokenService.create()
 
-    await RefreshTokenRepository.save(
+    await RefreshTokenService.save(
         token=refresh_token,
-        user_id=user.id,
-        ttl_seconds=auth_config.refresh_token_ttl,
+        user_id=user.id
     )
 
     await db_session.commit()

@@ -12,26 +12,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# packages/shared/src/auth_lib/repositories/token.py
+# packages/services/src/tokens_lib/services/access_token.py
 import uuid
-import secrets
 from datetime import datetime
 import jwt
-from ..config import auth_config
+from redis_lib import blacklist_redis_client
+from ..config import tokens_config
 
 
-class TokenRepository:
+class AccessTokenService:
     """
-    Stateless repository for issuing and validating authentication tokens.
+    Stateless service for issuing, decoding, and revoking JWT access tokens.
 
-    All methods are classmethods that operate on the shared auth configuration
-    directly, keeping the repository stateless and avoiding any shared mutable
-    state. Covers the full token lifecycle: access token issuance, access token
-    validation, and refresh token generation.
+    All methods are classmethods and operate purely on the arguments passed
+    to them, with no shared mutable state. Token signing parameters are read
+    from tokens_config. Revocation entries are stored in the dedicated
+    blacklist Redis database.
     """
 
     @classmethod
-    def create_access_token(
+    def create(
         cls,
         user_id: int,
         permissions: list[str],
@@ -58,7 +58,7 @@ class TokenRepository:
         -------
         str
             Signed JWT string encoded with the algorithm and secret key
-            defined in auth_config.
+            defined in tokens_config.
 
         Notes
         -----
@@ -88,16 +88,16 @@ class TokenRepository:
             "sub": str(user_id),
             "jti": str(uuid.uuid4()),
             "permissions": permissions,
-            "exp": now.timestamp() + auth_config.access_token_ttl,
+            "exp": now.timestamp() + tokens_config.access_token_ttl,
         }
         return jwt.encode(
             payload,
-            auth_config.jwt_secret_key,
-            algorithm=auth_config.jwt_algorithm,
+            tokens_config.jwt_secret_key,
+            algorithm=tokens_config.jwt_algorithm,
         )
 
     @classmethod
-    def decode_access_token(cls, token: str) -> dict:
+    def decode(cls, token: str) -> dict:
         """
         Decode and validate a JWT access token.
 
@@ -127,26 +127,69 @@ class TokenRepository:
         """
         return jwt.decode(
             token,
-            auth_config.jwt_secret_key,
-            algorithms=[auth_config.jwt_algorithm],
+            tokens_config.jwt_secret_key,
+            algorithms=[tokens_config.jwt_algorithm],
         )
 
     @classmethod
-    def create_refresh_token(cls) -> str:
+    async def revoke(
+        cls,
+        jti: str,
+        ttl_seconds: int,
+    ) -> None:
         """
-        Generate a cryptographically secure opaque refresh token.
+        Add a token JTI to the blacklist with a limited lifetime.
 
-        Uses secrets.token_urlsafe with the byte length defined by
-        auth_config.refresh_token_length, producing a URL-safe
-        base64-encoded string that fits within the String(512) column
-        constraint in the database.
+        Parameters
+        ----------
+        jti : str
+            Unique JWT ID extracted from the token payload.
+        ttl_seconds : int
+            Remaining lifetime of the token in seconds.
+
+        Notes
+        -----
+        The TTL must be set to the token's remaining lifetime rather than
+        its full original TTL. Setting a longer TTL wastes Redis memory by
+        keeping entries alive after the token would have expired naturally
+        and been rejected by exp validation anyway. Setting a shorter TTL
+        creates a window where a revoked token could pass the blacklist
+        check after the Redis key expires but before the token's exp is
+        reached.
+        """
+        await blacklist_redis_client.setex(
+            name=jti,
+            time=ttl_seconds,
+            value=1,
+        )
+
+    @classmethod
+    async def is_revoked(cls, jti: str) -> bool:
+        """
+        Check whether a token JTI is present in the blacklist.
+
+        Parameters
+        ----------
+        jti : str
+            Unique JWT ID extracted from the token payload.
 
         Returns
         -------
-        str
-            URL-safe base64-encoded random string to be stored in Redis
-            and returned to the client. Never decoded or interpreted by
-            the server — looked up by exact match only on every refresh
-            request.
+        bool
+            True if the token has been revoked and authentication should
+            fail. False if the token is not blacklisted and may proceed
+            to further validation.
+
+        Notes
+        -----
+        This method is called on every authenticated request, making its
+        performance critical. Redis EXISTS runs in O(1) time and typically
+        completes in under 1ms on a low-latency connection, keeping the
+        per-request overhead negligible.
+
+        EXISTS for a single key always returns either 0 or 1, never more,
+        because Redis keys are unique by definition. A repeated SETEX with
+        the same key simply overwrites the existing entry rather than
+        creating a duplicate.
         """
-        return secrets.token_urlsafe(auth_config.refresh_token_length)
+        return await blacklist_redis_client.exists(jti) == 1

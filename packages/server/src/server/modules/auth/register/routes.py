@@ -17,7 +17,7 @@ from fastapi import Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from postgres_lib.repositories.user import UserRepository
 from postgres_lib.repositories.role import RoleRepository
-from auth_lib.repositories.password import PasswordRepository
+from password_lib import PasswordService
 from .schemas import RegisterRequest
 from ..router import auth_router
 from ....dependencies import get_async_db_session
@@ -70,7 +70,7 @@ async def register_route(
 
     user = await UserRepository.create(db_session, obj_data={
         "email": body.email,
-        "hashed_password": PasswordRepository.hash(body.password),
+        "hashed_password": PasswordService.hash(body.password),
     })
 
     await UserRepository.assign_role(db_session, user_id=user.id, role_id=default_role.id)

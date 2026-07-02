@@ -12,6 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# packages/shared/src/auth_lib/repositories/__init__.py
-from .token import TokenRepository 
-from .password import PasswordRepository
+# packages/services/src/rate_limit_lib/__init__.py
+from .config import rate_limit_config
+from .service import RateLimitService

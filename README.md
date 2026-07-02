@@ -18,7 +18,11 @@ backend-core/
 │   │
 │   ├── shared/         # Cross-process shared infrastructure. Contains base
 │   │                   # configurations and unified client abstractions for
-│   │                   # external services (e.g. PostgreSQL, Redis).
+│   │                   # external services.
+│   │
+│   ├── services/       # Cross-process business logic built on top of shared
+│   │                   # infrastructure. Contains self-contained service
+│   │                   # modules that implement domain-specific behaviour.
 │   │
 │   └── scripts/        # Standalone automation scripts for environment
 │                       # bootstrapping, infrastructure initialization, and

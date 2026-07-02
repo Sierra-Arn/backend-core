@@ -14,7 +14,7 @@
 
 # packages/server/src/server/modules/admin/roles/manage_permissions/schemas.py
 from pydantic import BaseModel, ConfigDict, Field
-from auth_lib import PermissionEnum
+from postgres_lib import PermissionEnum
 
 
 class AssignPermissionRequest(BaseModel):

@@ -13,7 +13,7 @@
 # limitations under the License.
 
 # packages/shared/src/postgres_lib/config.py
-from typing import ClassVar
+from typing import ClassVar, Final
 from urllib.parse import quote_plus
 from pydantic import Field
 from base_lib import BaseConfig
@@ -44,39 +44,42 @@ class PostgresConfig(BaseConfig):
         Database user password; treated as sensitive data.
     user_db_name : str
         Target database name for connection.
-    echo : bool
+    _echo : bool
         Controls SQL statement logging to stdout; enabled for development
         debugging, disabled in production. Default is False.
-    autocommit : bool
+    _autocommit : bool
         Controls automatic transaction commit in SQLAlchemy sessions;
         explicit commit calls are required when disabled. Default is False.
-    autoflush : bool
+    _autoflush : bool
         Controls automatic flush of pending ORM changes before queries;
         manual flushing gives full control over side effects when disabled.
         Default is False.
-    expire_on_commit : bool
+    _expire_on_commit : bool
         Determines whether ORM objects are expired immediately after
         transaction commit; disabled to retain attribute access post-commit.
         Default is False.
     database_url : str
         Read-only property assembling the PostgreSQL connection URI with the
-        psycopg (version 3) driver. The same URL is used by both synchronous
-        Alembic migrations and the asynchronous application runtime, since the
-        psycopg dialect backs sync and async engines alike; the engine
-        constructor (create_engine vs create_async_engine) selects the mode.
+        psycopg (version 3) driver. The URL is mode-agnostic — the psycopg dialect
+        backs both synchronous and asynchronous engines — so the engine constructor
+        that consumes it (create_engine vs create_async_engine), not the URL,
+        selects the mode.
     """
 
     env_prefix: ClassVar[str] = "POSTGRES_"
 
+    # ========== ENV-DEPENDENT (configurable via POSTGRES_ prefixed env vars) ==========
     host: str = "127.0.0.1"
     port: int = Field(default=5432, ge=1, le=65535)
     user_name: str
     user_password: str
     user_db_name: str
-    echo: bool = False
-    autocommit: bool = False
-    autoflush: bool = False
-    expire_on_commit: bool = False
+
+    # ========== ARCHITECTURAL CONSTANTS (private, not configurable via env) ==========
+    _echo: Final[bool] = False
+    _autocommit: Final[bool] = False
+    _autoflush: Final[bool] = False
+    _expire_on_commit: Final[bool] = False
 
     @property
     def database_url(self) -> str:

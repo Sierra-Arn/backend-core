@@ -15,8 +15,7 @@
 # packages/server/src/server/modules/admin/users/manage_roles/routes.py
 from fastapi import Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from postgres_lib import UserRepository, RoleRepository
-from auth_lib import PermissionEnum
+from postgres_lib import UserRepository, RoleRepository, PermissionEnum
 from .schemas import AssignRoleRequest, RevokeRoleRequest
 from ..router import users_admin_router
 from .....dependencies import get_async_db_session, require_permission

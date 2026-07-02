@@ -15,9 +15,8 @@
 # packages/shared/src/postgres_lib/models/role_permission.py
 from sqlalchemy import ForeignKey, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
-from auth_lib import PermissionEnum
 from .base import Base, CreatedAtMixin
-from .types import PermissionSQL
+from .types import PermissionSQL, PermissionEnum
 
 
 class RolePermission(Base, CreatedAtMixin):

@@ -12,45 +12,47 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# packages/shared/src/redis_lib/repositories/refresh_token.py
-from ..client import async_redis_client
-from ..config import redis_config
+# packages/services/src/tokens_lib/services/refresh_token.py
+import secrets
+from redis_lib import refresh_token_redis_client
+from ..config import tokens_config
 
 
-class RefreshTokenRepository:
+class RefreshTokenService:
     """
-    Stateless repository for managing opaque refresh token entries in Redis.
+    Stateless service for generating, persisting, and revoking opaque refresh
+    tokens stored in Redis.
 
-    All methods are classmethods that operate on the shared async Redis
-    client directly, keeping the repository stateless and avoiding any
-    shared mutable state. Each entry maps an opaque token value to the
-    owning user_id and expires automatically after the token lifetime
-    elapses, eliminating the need for explicit cleanup queries.
+    All methods are classmethods and operate purely on the arguments passed
+    to them, with no shared mutable state. Token generation parameters are
+    read from tokens_config. Entries are stored in the dedicated refresh
+    token Redis database and expire automatically after their configured TTL.
     """
 
     @classmethod
-    def _make_key(cls, token: str) -> str:
+    def create(cls) -> str:
         """
-        Build a namespaced Redis key for a given refresh token value.
+        Generate a cryptographically secure opaque refresh token.
 
-        Parameters
-        ----------
-        token : str
-            Opaque refresh token value issued to the client.
+        Uses secrets.token_urlsafe with the byte length defined by
+        tokens_config.refresh_token_length, producing a URL-safe
+        base64-encoded string.
 
         Returns
         -------
         str
-            Redis key in the format refresh_token_prefix:token_value.
+            URL-safe base64-encoded random string to be stored in Redis
+            and returned to the client. Never decoded or interpreted by
+            the server — looked up by exact match only on every refresh
+            request.
         """
-        return f"{redis_config.refresh_token_prefix}:{token}"
+        return secrets.token_urlsafe(tokens_config.refresh_token_length)
 
     @classmethod
     async def save(
         cls,
         token: str,
         user_id: int,
-        ttl_seconds: int,
     ) -> None:
         """
         Persist a refresh token entry mapped to the owning user.
@@ -61,14 +63,10 @@ class RefreshTokenRepository:
             Opaque refresh token value issued to the client.
         user_id : int
             Primary key of the user who owns this token.
-        ttl_seconds : int
-            Lifetime of the token in seconds. The Redis key expires
-            automatically after this duration, revoking the token
-            without requiring an explicit delete.
         """
-        await async_redis_client.setex(
-            name=cls._make_key(token),
-            time=ttl_seconds,
+        await refresh_token_redis_client.setex(
+            name=token,
+            time=tokens_config.refresh_token_ttl,
             value=user_id,
         )
 
@@ -88,7 +86,7 @@ class RefreshTokenRepository:
             Primary key of the owning user if the token exists and has
             not expired. None if the token is not found or has elapsed.
         """
-        value = await async_redis_client.get(cls._make_key(token))
+        value = await refresh_token_redis_client.get(token)
         return int(value) if value is not None else None
 
     @classmethod
@@ -107,7 +105,7 @@ class RefreshTokenRepository:
             True if the token was found and deleted. False if the token
             did not exist or had already expired.
         """
-        return await async_redis_client.delete(cls._make_key(token)) == 1
+        return await refresh_token_redis_client.delete(token) == 1
 
     @classmethod
     async def exists(cls, token: str) -> bool:
@@ -131,4 +129,4 @@ class RefreshTokenRepository:
         when the caller only needs to verify token presence without
         retrieving the associated user_id.
         """
-        return await async_redis_client.exists(cls._make_key(token)) == 1
+        return await refresh_token_redis_client.exists(token) == 1

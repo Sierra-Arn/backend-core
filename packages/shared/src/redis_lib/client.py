@@ -17,11 +17,29 @@ import redis.asyncio as aioredis
 from .config import redis_config
 
 
-async_redis_client = aioredis.from_url(
-    redis_config.connection_url,
-    db=redis_config.db_index,
+blacklist_redis_client = aioredis.from_url(
+    redis_config.blacklist_url,
     decode_responses=True,
 )
 """
-Asynchronous Redis client configured via application settings.
+Asynchronous Redis client for JWT blacklist entries.
+Connects to the blacklist database defined by blacklist_db_index.
+"""
+
+refresh_token_redis_client = aioredis.from_url(
+    redis_config.refresh_token_url,
+    decode_responses=True,
+)
+"""
+Asynchronous Redis client for opaque refresh token entries.
+Connects to the refresh token database defined by refresh_token_db_index.
+"""
+
+rate_limit_redis_client = aioredis.from_url(
+    redis_config.rate_limit_url,
+    decode_responses=True,
+)
+"""
+Asynchronous Redis client for sliding window rate limit counters.
+Connects to the rate limiting database defined by rate_limit_db_index.
 """

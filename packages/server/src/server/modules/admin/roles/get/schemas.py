@@ -13,7 +13,7 @@
 # limitations under the License.
 
 # packages/server/src/server/modules/admin/roles/get/schemas.py
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict
 from schemas_lib import IdMixin, CreatedAtMixin, NameMixin
 
 

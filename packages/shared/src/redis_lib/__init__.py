@@ -14,5 +14,4 @@
 
 # packages/shared/src/redis_lib/__init__.py
 from .config import redis_config
-from .client import async_redis_client
-from .repositories import JwtBlacklistRepository, RateLimitRepository, RefreshTokenRepository
+from .client import blacklist_redis_client, refresh_token_redis_client, rate_limit_redis_client

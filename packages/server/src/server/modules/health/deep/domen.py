@@ -16,7 +16,7 @@
 import logging
 from sqlalchemy import text
 from postgres_lib import async_engine
-from redis_lib import async_redis_client
+from redis_lib import blacklist_redis_client, refresh_token_redis_client, rate_limit_redis_client
 from ..types import ServiceStatus
 
 logger = logging.getLogger(__name__)
@@ -42,19 +42,14 @@ async def check_postgres() -> ServiceStatus:
             await conn.execute(text("SELECT 1"))
         return ServiceStatus.OK
     except Exception as e:
-        logger.error(
-            "PostgreSQL healthcheck failed",
-            exc_info=e,
-        )
+        logger.error("PostgreSQL healthcheck failed", exc_info=e)
         return ServiceStatus.UNAVAILABLE
 
 
-async def check_redis() -> ServiceStatus:
+async def check_blacklist_redis() -> ServiceStatus:
     """
-    Verify Redis availability by issuing a ping command.
-
-    Uses the shared async Redis client to send a direct connectivity
-    probe against the configured Redis instance.
+    Verify availability of the JWT blacklist Redis database by issuing
+    a ping command.
 
     Returns
     -------
@@ -64,11 +59,48 @@ async def check_redis() -> ServiceStatus:
         out, or encounters an authentication error.
     """
     try:
-        await async_redis_client.ping()
+        await blacklist_redis_client.ping()
         return ServiceStatus.OK
     except Exception as e:
-        logger.error(
-            "Redis healthcheck failed",
-            exc_info=e,
-        )
+        logger.error("Blacklist Redis healthcheck failed", exc_info=e)
+        return ServiceStatus.UNAVAILABLE
+
+
+async def check_refresh_token_redis() -> ServiceStatus:
+    """
+    Verify availability of the refresh token Redis database by issuing
+    a ping command.
+
+    Returns
+    -------
+    ServiceStatus
+        ServiceStatus.OK if the ping returns a successful response.
+        ServiceStatus.UNAVAILABLE if the connection is refused, times
+        out, or encounters an authentication error.
+    """
+    try:
+        await refresh_token_redis_client.ping()
+        return ServiceStatus.OK
+    except Exception as e:
+        logger.error("Refresh token Redis healthcheck failed", exc_info=e)
+        return ServiceStatus.UNAVAILABLE
+
+
+async def check_rate_limit_redis() -> ServiceStatus:
+    """
+    Verify availability of the rate limiting Redis database by issuing
+    a ping command.
+
+    Returns
+    -------
+    ServiceStatus
+        ServiceStatus.OK if the ping returns a successful response.
+        ServiceStatus.UNAVAILABLE if the connection is refused, times
+        out, or encounters an authentication error.
+    """
+    try:
+        await rate_limit_redis_client.ping()
+        return ServiceStatus.OK
+    except Exception as e:
+        logger.error("Rate limit Redis healthcheck failed", exc_info=e)
         return ServiceStatus.UNAVAILABLE

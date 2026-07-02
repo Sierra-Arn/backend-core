@@ -16,8 +16,8 @@
 from fastapi import Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from postgres_lib import UserRepository
-from auth_lib import PasswordRepository
-from redis_lib import RefreshTokenRepository
+from password_lib import PasswordService
+from tokens_lib import RefreshTokenService
 from .schemas import ChangePasswordRequest
 from ..router import account_router
 from ....dependencies import get_async_db_session, get_current_user
@@ -61,7 +61,7 @@ async def change_password_route(
     """
     user = await UserRepository.get_by_id(db, obj_id=int(payload["sub"]))
 
-    if not PasswordRepository.verify(body.password, user.hashed_password):
+    if not PasswordService.verify(body.password, user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Current password is incorrect.",
@@ -70,7 +70,7 @@ async def change_password_route(
     await UserRepository.update_by_id(
         db,
         obj_id=user.id,
-        obj_data={"hashed_password": PasswordRepository.hash(body.new_password)},
+        obj_data={"hashed_password": PasswordService.hash(body.new_password)},
     )
-    await RefreshTokenRepository.revoke(token=body.refresh_token)
+    await RefreshTokenService.revoke(token=body.refresh_token)
     await db.commit()

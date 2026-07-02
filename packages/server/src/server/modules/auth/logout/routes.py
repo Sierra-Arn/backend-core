@@ -15,7 +15,7 @@
 # packages/server/src/server/modules/auth/logout/routes.py
 from datetime import datetime, timezone
 from fastapi import Depends, status
-from redis_lib import JwtBlacklistRepository, RefreshTokenRepository
+from tokens_lib import AccessTokenService, RefreshTokenService
 from .schemas import LogoutRequest
 from ..router import auth_router
 from ....dependencies import get_current_user
@@ -58,6 +58,6 @@ async def logout_route(
     ttl = int(exp - datetime.now(timezone.utc).timestamp())
 
     if ttl > 0:
-        await JwtBlacklistRepository.add(jti=jti, ttl_seconds=ttl)
+        await AccessTokenService.revoke(jti=jti, ttl_seconds=ttl)
 
-    await RefreshTokenRepository.revoke(token=body.refresh_token)
+    await RefreshTokenService.revoke(token=body.refresh_token)

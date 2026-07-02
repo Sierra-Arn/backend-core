@@ -18,6 +18,6 @@ from .session import async_engine, async_session_factory
 from .models import (
     Base, IdModel, CreatedAtMixin, 
     User, UserRole, Role, RolePermission, 
-    RoleEnum, PermissionSQL
+    PermissionEnum, RoleEnum, PermissionSQL
 )
 from .repositories import BaseRepository, UserRepository, RoleRepository

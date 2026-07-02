@@ -12,7 +12,9 @@ import sqlalchemy as sa
 from alembic import op
 from dotenv import load_dotenv
 from sqlalchemy.sql import column, table
-from auth_lib import PermissionEnum, PasswordRepository
+from sqlalchemy.dialects.postgresql import ENUM
+from postgres_lib import PermissionEnum
+from password_lib import PasswordService
 
 load_dotenv()
 
@@ -37,7 +39,7 @@ def upgrade() -> None:
     role_permissions_table = table(
         "role_permissions",
         column("role_id", sa.Integer),
-        column("permission", sa.String),
+        column("permission", ENUM(name="permission", create_type=False)),
         column("created_at", sa.DateTime(timezone=True)),
     )
     users_table = table(
@@ -71,7 +73,7 @@ def upgrade() -> None:
         for p in PermissionEnum
     ]))
 
-    hashed_password = PasswordRepository.hash(_ADMIN_PASSWORD)
+    hashed_password = PasswordService.hash(_ADMIN_PASSWORD)
 
     bind.execute(users_table.insert().values([
         {
