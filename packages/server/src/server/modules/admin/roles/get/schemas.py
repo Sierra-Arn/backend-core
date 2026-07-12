@@ -14,7 +14,7 @@
 
 # packages/server/src/server/modules/admin/roles/get/schemas.py
 from pydantic import BaseModel, ConfigDict
-from schemas_lib import IdMixin, CreatedAtMixin, NameMixin
+from .....shared.schemas import IdMixin, CreatedAtMixin, NameMixin
 
 
 class RoleResponse(IdMixin, NameMixin, CreatedAtMixin, BaseModel):

@@ -20,7 +20,7 @@ from postgres_lib import UserRepository
 from tokens_lib import AccessTokenService, RefreshTokenService
 from .schemas import RefreshRequest, RefreshResponse
 from ..router import auth_router
-from ....dependencies import get_async_db_session
+from ....shared.dependencies import get_async_db_session
 
 
 @auth_router.post(

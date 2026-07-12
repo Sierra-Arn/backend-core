@@ -12,15 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# packages/shared/src/schemas_lib/token.py
-from pydantic import Field
-
-
-class NameMixin:
-    """
-    Shared name field for response schemas that expose a human-readable identifier.
-    """
-
-    name: str = Field(
-        description="Unique human-readable identifier for the role.",
-    )
+# packages/server/src/server/shared/schemas/__init__.py
+from .error import ErrorResponse
+from .user import IdMixin, EmailMixin, PasswordMixin, IsVerifiedMixin, BioMixin, CreatedAtMixin
+from .token import AccessTokenMixin, RefreshTokenMixin
+from .role import NameMixin

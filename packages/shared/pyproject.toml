@@ -14,5 +14,4 @@ include = [
     "base_lib*",
     "postgres_lib*",
     "redis_lib*",
-    "schemas_lib*"
 ]

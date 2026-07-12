@@ -17,7 +17,7 @@ import logging
 from fastapi import Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
-from .schemas import ErrorResponse
+from ..shared.schemas import ErrorResponse
 
 logger = logging.getLogger(__name__)
 

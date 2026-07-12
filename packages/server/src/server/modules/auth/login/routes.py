@@ -21,7 +21,7 @@ from tokens_lib import RefreshTokenService, AccessTokenService
 from password_lib import PasswordService
 from .schemas import LoginRequest, LoginResponse
 from ..router import auth_router
-from ....dependencies import get_async_db_session
+from ....shared.dependencies import get_async_db_session
 
 # response_model tells FastAPI to use LoginResponse as the documented output
 # schema for this endpoint — Swagger UI will render it as the expected response

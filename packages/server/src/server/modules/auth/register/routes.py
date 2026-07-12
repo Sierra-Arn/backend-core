@@ -20,7 +20,7 @@ from postgres_lib.repositories.role import RoleRepository
 from password_lib import PasswordService
 from .schemas import RegisterRequest
 from ..router import auth_router
-from ....dependencies import get_async_db_session
+from ....shared.dependencies import get_async_db_session
 
 # Route registration: decorating with @auth_router.post() alone is not enough —
 # this module must be imported somewhere in the application (e.g. in

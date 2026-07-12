@@ -14,7 +14,7 @@
 
 # packages/server/src/server/modules/auth/login/schemas.py
 from pydantic import BaseModel, ConfigDict
-from schemas_lib import EmailMixin, PasswordMixin, AccessTokenMixin, RefreshTokenMixin
+from ....shared.schemas import EmailMixin, PasswordMixin, AccessTokenMixin, RefreshTokenMixin
 
 
 class LoginRequest(EmailMixin, PasswordMixin, BaseModel):

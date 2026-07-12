@@ -20,7 +20,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from starlette.responses import Response
 from rate_limit_lib import RateLimitService
-from schemas_lib import ErrorResponse
+from ..shared.schemas import ErrorResponse
 
 logger = logging.getLogger(__name__)
 

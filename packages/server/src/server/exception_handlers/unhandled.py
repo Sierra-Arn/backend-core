@@ -14,9 +14,9 @@
 
 # packages/server/src/server/exception_handlers/unhandled.py
 import logging
-from fastapi import Request
+from fastapi import Request, status
 from fastapi.responses import JSONResponse
-from .schemas import ErrorResponse
+from ..shared.schemas import ErrorResponse
 
 logger = logging.getLogger(__name__)
 
@@ -53,8 +53,8 @@ async def unhandled_exception_handler(request: Request, exc: Exception) -> JSONR
         },
     )
     body = ErrorResponse(
-        status_code=500,
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         error="Internal Server Error",
         detail="Internal server error",
     )
-    return JSONResponse(status_code=500, content=body.model_dump())
+    return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content=body.model_dump())

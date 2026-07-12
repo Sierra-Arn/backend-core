@@ -14,7 +14,7 @@
 
 # packages/server/src/server/modules/auth/logout/schemas.py
 from pydantic import BaseModel, ConfigDict
-from schemas_lib import AccessTokenMixin, RefreshTokenMixin
+from ....shared.schemas import AccessTokenMixin, RefreshTokenMixin
 
 
 class LogoutRequest(AccessTokenMixin, RefreshTokenMixin, BaseModel):

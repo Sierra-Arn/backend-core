@@ -14,7 +14,7 @@
 
 # packages/server/src/server/modules/account/me/schemas.py
 from pydantic import BaseModel, ConfigDict
-from schemas_lib import IdMixin, EmailMixin, IsVerifiedMixin, BioMixin, CreatedAtMixin
+from ....shared.schemas import IdMixin, EmailMixin, IsVerifiedMixin, BioMixin, CreatedAtMixin
 
 
 class UserResponse(IdMixin, EmailMixin, IsVerifiedMixin, BioMixin, CreatedAtMixin, BaseModel):

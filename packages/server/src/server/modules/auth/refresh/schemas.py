@@ -14,7 +14,7 @@
 
 # packages/server/src/server/modules/auth/refresh/schemas.py
 from pydantic import BaseModel, ConfigDict
-from schemas_lib import RefreshTokenMixin, AccessTokenMixin
+from ....shared.schemas import RefreshTokenMixin, AccessTokenMixin
 
 
 class RefreshRequest(RefreshTokenMixin, BaseModel):

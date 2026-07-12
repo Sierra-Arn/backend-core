@@ -14,7 +14,7 @@
 
 # packages/server/src/server/modules/account/change_password/schemas.py
 from pydantic import BaseModel, ConfigDict, Field, field_validator, ValidationInfo
-from schemas_lib import RefreshTokenMixin, PasswordMixin
+from ....shared.schemas import RefreshTokenMixin, PasswordMixin
 
 
 class ChangePasswordRequest(PasswordMixin, RefreshTokenMixin, BaseModel):

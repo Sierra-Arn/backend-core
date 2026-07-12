@@ -65,7 +65,6 @@ server/
 └── src/server/
     ├── app.py                  # FastAPI application factory and middleware registration.
     ├── config.py               # Environment-based settings (Pydantic BaseSettings).
-    ├── dependencies.py         # Shared FastAPI dependencies (session injection, auth guards).
     ├── logger.py               # Structured logging configuration.
     ├── main.py                 # Uvicorn entry point for the ASGI server.
     │
@@ -79,6 +78,14 @@ server/
     ├── middleware/
     │   ├── access_log.py       # Logs every request with method, URL, status, and response time.
     │   └── rate_limit.py       # IP-based sliding window rate limiting via Redis.
+    │
+    ├── shared/
+    │   ├── dependencies.py     # Shared FastAPI dependencies (session injection, auth guards).
+    │   └── schemas/            # Pydantic schemas for request/response validation.
+    │       ├── error.py        # ErrorResponse schema.
+    │       ├── user.py         # User-related schemas.
+    │       ├── role.py         # Role-related schemas.
+    │       └── token.py        # Access and refresh token schemas.
     │
     └── modules/                # Route handlers grouped by domain resource.
         │
@@ -119,11 +126,11 @@ server/
 
 Route handlers are organized by domain resource under `modules/`, with each resource containing subdirectories per HTTP operation. This makes the API surface navigable by resource and operation rather than by technical artifact type.
 
-The `exception_handlers/` directory translates internal exceptions into generic, decoupled error responses. The `middleware/` directory implements cross-cutting concerns applied to every request before it reaches a route handler.
+The `exception_handlers/` directory translates internal exceptions into generic, decoupled error responses. The `middleware/` directory implements cross-cutting concerns applied to every request before it reaches a route handler. The `shared/` directory contains server-specific utilities, such as FastAPI dependencies and Pydantic schemas, which are reused across multiple modules.
 
 ### 2. `packages/shared/`
 
-Centralizes all infrastructure client code and shared utilities consumed across the system. Implements the concrete clients for PostgreSQL and Redis, base configuration primitives, and shared Pydantic schema mixins.
+Centralizes all infrastructure client code and shared utilities consumed across the system. Implements the concrete clients for PostgreSQL and Redis, and base configuration primitives.
 
 ```
 shared/
@@ -148,15 +155,9 @@ shared/
     │       ├── user.py             # User-specific queries and persistence operations.
     │       └── role.py             # Role-specific queries and permission assignment operations.
     │
-    ├── redis_lib/                  # In-memory store client.
-    │   ├── config.py               # Redis connection settings with per-database URL properties.
-    │   └── client.py               # Async Redis client instances keyed by logical database.
-    │
-    └── schemas_lib/                # Shared Pydantic field mixins for request and response schemas.
-        ├── error.py                # ErrorResponse schema.
-        ├── user.py                 # User field mixins.
-        ├── role.py                 # Role field mixins.
-        └── token.py                # Access and refresh token field mixins.
+    └── redis_lib/                  # In-memory store client.
+        ├── config.py               # Redis connection settings with per-database URL properties.
+        └── client.py               # Async Redis client instances keyed by logical database.
 ```
 
 ### 3. `packages/services/`

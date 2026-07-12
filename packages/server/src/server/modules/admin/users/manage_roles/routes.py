@@ -18,7 +18,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from postgres_lib import UserRepository, RoleRepository, PermissionEnum
 from .schemas import AssignRoleRequest, RevokeRoleRequest
 from ..router import users_admin_router
-from .....dependencies import get_async_db_session, require_permission
+from .....shared.dependencies import get_async_db_session, require_permission
 
 
 @users_admin_router.post(

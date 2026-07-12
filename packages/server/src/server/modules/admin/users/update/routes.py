@@ -19,7 +19,7 @@ from postgres_lib import UserRepository, PermissionEnum
 from password_lib import PasswordService
 from .schemas import UpdateUserRequest
 from ..router import users_admin_router
-from .....dependencies import get_async_db_session, require_permission
+from .....shared.dependencies import get_async_db_session, require_permission
 
 
 @users_admin_router.patch(

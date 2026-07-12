@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# packages/server/src/server/exception_handlers/schemas.py
+# packages/server/src/server/shared/schemas/error.py
 from pydantic import BaseModel, ConfigDict, Field
 
 
@@ -22,26 +22,39 @@ class ErrorResponse(BaseModel):
 
     The status_code field intentionally mirrors the HTTP response status code.
     Although the code is already present in the response headers, including it
-    in the body makes the payload self-contained: clients that log or forward
+    in the body makes the payload self-contained — clients that log or forward
     only the JSON body retain the full context without needing to inspect
     headers separately.
+
+    Attributes
+    ----------
+    status_code : int
+        HTTP status code of the response, mirrored from the response headers
+        for client convenience.
+    error : str
+        Short human-readable name for the error derived from the HTTP status
+        phrase, such as Not Found or Unprocessable Entity.
+    detail : str
+        Specific description of what went wrong. Should be informative enough
+        for the client to understand the cause without exposing internal
+        implementation details.
     """
 
     status_code: int = Field(
-        description="HTTP status code of the response (e.g., 404, 422, 500).",
+        description="HTTP status code of the response (e.g. 404, 422, 500).",
     )
     error: str = Field(
         description=(
             "Short human-readable name for the error, derived from the HTTP "
-            "status phrase (e.g., 'Not Found', 'Unprocessable Entity')."
-        )
+            "status phrase (e.g. Not Found, Unprocessable Entity)."
+        ),
     )
     detail: str = Field(
         description=(
             "Specific description of what went wrong. Should be informative "
             "enough for the client to understand the cause without exposing "
             "internal implementation details."
-        )
+        ),
     )
 
     model_config = ConfigDict(
@@ -54,7 +67,5 @@ class ErrorResponse(BaseModel):
                     "detail": "User with id 42 does not exist",
                 }
             ]
-        }
+        },
     )
-
-

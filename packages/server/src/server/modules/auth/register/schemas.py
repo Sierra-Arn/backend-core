@@ -14,7 +14,7 @@
 
 # packages/server/src/server/modules/auth/register/schemas.py
 from pydantic import BaseModel, ConfigDict, Field, field_validator
-from schemas_lib import EmailMixin, PasswordMixin
+from ....shared.schemas import EmailMixin, PasswordMixin
 
 
 class RegisterRequest(EmailMixin, PasswordMixin, BaseModel):

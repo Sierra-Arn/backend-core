@@ -18,7 +18,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from postgres_lib import UserRepository
 from .schemas import UserResponse
 from ..router import account_router
-from ....dependencies import get_async_db_session, get_current_user
+from ....shared.dependencies import get_async_db_session, get_current_user
 
 
 @account_router.get(

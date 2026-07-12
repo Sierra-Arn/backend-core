@@ -18,7 +18,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from postgres_lib.repositories.user import UserRepository
 from .schemas import ChangeBioRequest
 from ..router import account_router
-from ....dependencies import get_async_db_session, get_current_user
+from ....shared.dependencies import get_async_db_session, get_current_user
 
 
 @account_router.patch(

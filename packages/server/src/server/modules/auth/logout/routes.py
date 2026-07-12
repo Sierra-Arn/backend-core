@@ -18,7 +18,7 @@ from fastapi import Depends, status
 from tokens_lib import AccessTokenService, RefreshTokenService
 from .schemas import LogoutRequest
 from ..router import auth_router
-from ....dependencies import get_current_user
+from ....shared.dependencies import get_current_user
 
 
 @auth_router.post(

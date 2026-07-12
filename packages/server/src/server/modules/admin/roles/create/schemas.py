@@ -14,7 +14,7 @@
 
 # packages/server/src/server/modules/admin/roles/create/schemas.py
 from pydantic import BaseModel, ConfigDict
-from schemas_lib import IdMixin, NameMixin
+from .....shared.schemas import IdMixin, NameMixin
 
 
 class CreateRoleRequest(NameMixin, BaseModel):

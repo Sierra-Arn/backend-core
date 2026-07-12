@@ -20,7 +20,7 @@ from password_lib import PasswordService
 from tokens_lib import RefreshTokenService
 from .schemas import ChangePasswordRequest
 from ..router import account_router
-from ....dependencies import get_async_db_session, get_current_user
+from ....shared.dependencies import get_async_db_session, get_current_user
 
 
 @account_router.patch(

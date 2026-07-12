@@ -12,21 +12,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# packages/server/src/server/modules/account/change_bio/schemas.py
-from pydantic import BaseModel, ConfigDict
-from ....shared.schemas import BioMixin
-
-
-class ChangeBioRequest(BioMixin, BaseModel):
-    """Request body for updating the authenticated user's biographical text."""
-
-    model_config = ConfigDict(
-        extra="forbid",
-        json_schema_extra={
-            "examples": [
-                {
-                    "bio": "Software engineer passionate about open source.",
-                }
-            ]
-        },
-    )
+# packages/server/src/server/shared/__init__.py
+from .dependencies import get_async_db_session, get_current_user, require_permission

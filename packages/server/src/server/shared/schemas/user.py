@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# packages/shared/src/schemas_lib/user.py
+# packages/server/src/server/shared/schemas/user.py
 from datetime import datetime
 from pydantic import Field
 

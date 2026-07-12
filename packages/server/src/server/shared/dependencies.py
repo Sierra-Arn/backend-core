@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# packages/server/src/server/dependencies.py
+# packages/server/src/server/shared/dependencies.py
 from typing import AsyncGenerator
 import jwt
 from fastapi import Depends, HTTPException, status
