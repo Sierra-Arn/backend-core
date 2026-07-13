@@ -42,15 +42,14 @@ backend-core/
 │                       # bootstrapping with auto-generated credentials for
 │                       # credential fields.
 │
-├── pixi.toml           # Pixi environment configuration defining dependency
-│                       # groups.
+├── pixi.toml           # Pixi configuration defining a single shared
+│                       # development environment.
 │
 ├── pixi.lock           # Fully resolved and reproducible dependency lockfile.
 │
 └── justfile            # Task runner: bootstrap commands, database migration
                         # targets, runtime process launchers, and Docker Compose
-                        # shortcuts. Automatically manages pixi environment
-                        # context per recipe.
+                        # shortcuts.
 ```
 
 ## Quick Start
